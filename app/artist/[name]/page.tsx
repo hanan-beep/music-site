@@ -15,9 +15,10 @@ async function getSongs(artist: string) {
 }
 
 export default async function ArtistPage({ params }: any) {
-  const artistName = decodeURIComponent(params.name);
+  const artistName = decodeURIComponent((await params).name);
   const albums = await getAlbums(artistName);
-  const songs = await getSongs(artistName);
+  const allSongs = await getSongs(artistName);
+  const soloSongs = allSongs.filter((s: any) => !s.fields['שם האלבום']);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#ffecd2] via-[#fcb69f] to-[#ffd1a9]" dir="rtl">
@@ -28,14 +29,15 @@ export default async function ArtistPage({ params }: any) {
       </header>
 
       <div className="p-8">
-        
+
+        {/* אלבומים */}
         {albums.length > 0 && (
           <section className="mb-10">
             <h2 className="text-2xl font-black text-[#DD2476] mb-4">💿 אלבומים</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {albums.map((album: any) => (
                 <a key={album.id}
-                  href={album.fields['קישור לדרייב'] || '#'}
+                  href={`/album/${encodeURIComponent(album.fields['שם האלבום'])}`}
                   className="bg-[#ffe8cc] rounded-2xl p-4 text-center hover:scale-105 transition-transform shadow-md block">
                   <div className="text-4xl mb-2">💿</div>
                   <h3 className="font-bold text-[#DD2476]">{album.fields['שם האלבום']}</h3>
@@ -45,11 +47,12 @@ export default async function ArtistPage({ params }: any) {
           </section>
         )}
 
-        {songs.length > 0 && (
+        {/* שירים בודדים */}
+        {soloSongs.length > 0 && (
           <section>
             <h2 className="text-2xl font-black text-[#DD2476] mb-4">🎵 שירים</h2>
             <div className="flex flex-col gap-3">
-              {songs.map((song: any) => (
+              {soloSongs.map((song: any) => (
                 <div key={song.id}
                   className="bg-[#ffe8cc] rounded-2xl p-4 flex items-center justify-between shadow-md">
                   <h3 className="font-bold text-gray-800">{song.fields['שם השיר']}</h3>
@@ -76,7 +79,6 @@ export default async function ArtistPage({ params }: any) {
         <p className="text-[#DD2476] font-bold">✨ ♩ ♪ ♫ ♬ יאללה שירים 💪 ♬ ♫ ♪ ♩ ✨</p>
         <p className="text-gray-500 text-sm mt-2">© כל הזכויות שמורות | By Yael</p>
       </footer>
-
     </main>
   );
 }

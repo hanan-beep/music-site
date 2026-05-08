@@ -32,13 +32,13 @@ export default function Player({ songs }: { songs: any[] }) {
           <p className="text-center font-bold text-[#DD2476] mb-2">
             🎵 {current.name.replace(/\.[^/.]+$/, '')}
           </p>
-          <audio
+          <iframe
             key={current.id}
-            controls
-            autoPlay
+            src={`https://drive.google.com/file/d/${current.id}/preview`}
             className="w-full"
-            src={`https://drive.google.com/uc?export=view&id=${current.id}`}>
-          </audio>
+            height="80"
+            allow="autoplay">
+         </iframe>
           <button
             onClick={() => setCurrent(null)}
             className="absolute top-2 left-2 text-gray-400 hover:text-white text-xl">

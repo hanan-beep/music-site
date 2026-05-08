@@ -26,24 +26,25 @@ export default function Player({ songs }: { songs: any[] }) {
         ))}
       </div>
 
-      {/* נגן קבוע בתחתית */}
       {current && (
-        <div className="fixed bottom-0 left-0 right-0 bg-[#2d3436] text-white p-4 shadow-2xl" dir="rtl">
-          <p className="text-center font-bold text-[#DD2476] mb-2">
-            🎵 {current.name.replace(/\.[^/.]+$/, '')}
-          </p>
+        <div className="fixed bottom-0 left-0 right-0 shadow-2xl" dir="rtl">
+          <div className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] px-6 py-2 flex items-center justify-between">
+            <p className="font-black text-white text-lg truncate">
+              🎵 {current.name.replace(/\.[^/.]+$/, '')}
+            </p>
+            <button
+              onClick={() => setCurrent(null)}
+              className="text-white hover:opacity-70 text-2xl font-bold ml-4">
+              ✕
+            </button>
+          </div>
           <iframe
             key={current.id}
             src={`https://drive.google.com/file/d/${current.id}/preview`}
             className="w-full"
             height="80"
             allow="autoplay">
-         </iframe>
-          <button
-            onClick={() => setCurrent(null)}
-            className="absolute top-2 left-2 text-gray-400 hover:text-white text-xl">
-            ✕
-          </button>
+          </iframe>
         </div>
       )}
     </div>

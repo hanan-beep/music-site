@@ -19,7 +19,7 @@ export default async function Artists() {
       <section className="grid grid-cols-2 md:grid-cols-4 gap-6 p-8">
         {artists.map((artist: any) => (
           <a key={artist.id}
-            href={artist.fields['קישור לדרייב'] || '#'}
+            href={`/artist/${encodeURIComponent(artist.fields['שם הזמר'])}`}
             target="_blank"
             className="bg-[#ffe8cc] rounded-3xl p-6 text-center hover:scale-105 transition-transform cursor-pointer shadow-md block">
             <div className="text-5xl mb-3">🎤</div>

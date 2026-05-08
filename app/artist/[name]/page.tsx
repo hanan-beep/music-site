@@ -14,7 +14,7 @@ async function getSongs(artist: string) {
   return res.json();
 }
 
-export default async function ArtistPage({ params }: { params: { name: string } }) {
+export default async function ArtistPage({ params }: any) {
   const artistName = decodeURIComponent(params.name);
   const albums = await getAlbums(artistName);
   const songs = await getSongs(artistName);
@@ -29,7 +29,6 @@ export default async function ArtistPage({ params }: { params: { name: string } 
 
       <div className="p-8">
         
-        {/* אלבומים */}
         {albums.length > 0 && (
           <section className="mb-10">
             <h2 className="text-2xl font-black text-[#DD2476] mb-4">💿 אלבומים</h2>
@@ -37,7 +36,6 @@ export default async function ArtistPage({ params }: { params: { name: string } 
               {albums.map((album: any) => (
                 <a key={album.id}
                   href={album.fields['קישור לדרייב'] || '#'}
-                  target="_blank"
                   className="bg-[#ffe8cc] rounded-2xl p-4 text-center hover:scale-105 transition-transform shadow-md block">
                   <div className="text-4xl mb-2">💿</div>
                   <h3 className="font-bold text-[#DD2476]">{album.fields['שם האלבום']}</h3>
@@ -47,7 +45,6 @@ export default async function ArtistPage({ params }: { params: { name: string } 
           </section>
         )}
 
-        {/* שירים */}
         {songs.length > 0 && (
           <section>
             <h2 className="text-2xl font-black text-[#DD2476] mb-4">🎵 שירים</h2>
@@ -58,7 +55,6 @@ export default async function ArtistPage({ params }: { params: { name: string } 
                   <h3 className="font-bold text-gray-800">{song.fields['שם השיר']}</h3>
                   <div className="flex gap-2">
                     <a href={song.fields['קישור MP3']}
-                      target="_blank"
                       className="bg-[#DD2476] text-white px-4 py-2 rounded-full text-sm font-bold hover:opacity-80">
                       ▶️ האזן
                     </a>

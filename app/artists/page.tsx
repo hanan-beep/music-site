@@ -20,7 +20,6 @@ export default async function Artists() {
         {artists.map((artist: any) => (
           <a key={artist.id}
             href={`/artist/${encodeURIComponent(artist.fields['שם הזמר'])}`}
-            target="_blank"
             className="bg-[#ffe8cc] rounded-3xl p-6 text-center hover:scale-105 transition-transform cursor-pointer shadow-md block">
             <div className="text-5xl mb-3">🎤</div>
             <h3 className="font-bold text-lg text-[#DD2476]">{artist.fields['שם הזמר']}</h3>

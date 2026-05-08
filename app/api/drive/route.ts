@@ -8,19 +8,29 @@ const auth = new google.auth.GoogleAuth({
   scopes: ['https://www.googleapis.com/auth/drive.readonly'],
 });
 
-async function getFolderContents(folderId: string, drive: any): Promise<any[]> {
+async function getFolderContents(folderId: string, drive: any) {
   const res = await drive.files.list({
     q: `'${folderId}' in parents and trashed = false`,
-    fields: 'files(id, name, mimeType)',
+    fields: 'files(id, name, mimeType, webViewLink)',
     orderBy: 'name',
+    supportsAllDrives: true,
+    includeItemsFromAllDrives: true,
   });
   return res.data.files || [];
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const folderId = searchParams.get('folderId');
+
     const drive = google.drive({ version: 'v3', auth });
-    
+
+    if (folderId) {
+      const contents = await getFolderContents(folderId, drive);
+      return Response.json(contents);
+    }
+
     const folder1 = process.env.GOOGLE_FOLDER_1!;
     const folder2 = process.env.GOOGLE_FOLDER_2!;
 

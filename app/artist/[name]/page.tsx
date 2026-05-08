@@ -1,24 +1,32 @@
-async function getAlbums(artist: string) {
+async function getArtistContents(artistId: string) {
   const res = await fetch(
-    `https://music-site-flame.vercel.app/api/albums?artist=${encodeURIComponent(artist)}`,
+    `https://music-site-flame.vercel.app/api/drive?folderId=${artistId}`,
     { cache: 'no-store' }
   );
   return res.json();
 }
 
-async function getSongs(artist: string) {
+async function getArtistId(artistName: string) {
   const res = await fetch(
-    `https://music-site-flame.vercel.app/api/songs?artist=${encodeURIComponent(artist)}`,
+    'https://music-site-flame.vercel.app/api/drive',
     { cache: 'no-store' }
   );
-  return res.json();
+  const artists = await res.json();
+  const artist = artists.find((a: any) => a.name === artistName);
+  return artist?.id;
 }
 
 export default async function ArtistPage({ params }: any) {
   const artistName = decodeURIComponent((await params).name);
-  const albums = await getAlbums(artistName);
-  const allSongs = await getSongs(artistName);
-  const soloSongs = allSongs.filter((s: any) => !s.fields['שם האלבום']);
+  const artistId = await getArtistId(artistName);
+  
+  if (!artistId) {
+    return <div dir="rtl" className="p-8 text-center">זמר לא נמצא</div>;
+  }
+
+  const contents = await getArtistContents(artistId);
+  const folders = contents.filter((f: any) => f.mimeType === 'application/vnd.google-apps.folder');
+  const songs = contents.filter((f: any) => f.mimeType !== 'application/vnd.google-apps.folder');
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#ffecd2] via-[#fcb69f] to-[#ffd1a9]" dir="rtl">
@@ -30,39 +38,36 @@ export default async function ArtistPage({ params }: any) {
 
       <div className="p-8">
 
-        {/* אלבומים */}
-        {albums.length > 0 && (
+        {folders.length > 0 && (
           <section className="mb-10">
             <h2 className="text-2xl font-black text-[#DD2476] mb-4">💿 אלבומים</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {albums.map((album: any) => (
-                <a key={album.id}
-                  href={`/album/${encodeURIComponent(album.fields['שם האלבום'])}`}
+              {folders.map((folder: any) => (
+                <a key={folder.id}
+                  href={`/album/${folder.id}?name=${encodeURIComponent(folder.name)}`}
                   className="bg-[#ffe8cc] rounded-2xl p-4 text-center hover:scale-105 transition-transform shadow-md block">
                   <div className="text-4xl mb-2">💿</div>
-                  <h3 className="font-bold text-[#DD2476]">{album.fields['שם האלבום']}</h3>
+                  <h3 className="font-bold text-[#DD2476]">{folder.name}</h3>
                 </a>
               ))}
             </div>
           </section>
         )}
 
-        {/* שירים בודדים */}
-        {soloSongs.length > 0 && (
+        {songs.length > 0 && (
           <section>
             <h2 className="text-2xl font-black text-[#DD2476] mb-4">🎵 שירים</h2>
             <div className="flex flex-col gap-3">
-              {soloSongs.map((song: any) => (
+              {songs.map((song: any) => (
                 <div key={song.id}
                   className="bg-[#ffe8cc] rounded-2xl p-4 flex items-center justify-between shadow-md">
-                  <h3 className="font-bold text-gray-800">{song.fields['שם השיר']}</h3>
+                  <h3 className="font-bold text-gray-800">{song.name.replace(/\.[^/.]+$/, '')}</h3>
                   <div className="flex gap-2">
-                    <a href={song.fields['קישור MP3']}
+                    <a href={`https://drive.google.com/uc?export=view&id=${song.id}`}
                       className="bg-[#DD2476] text-white px-4 py-2 rounded-full text-sm font-bold hover:opacity-80">
                       ▶️ האזן
                     </a>
-                    <a href={song.fields['קישור MP3']}
-                      download
+                    <a href={`https://drive.google.com/uc?export=download&id=${song.id}`}
                       className="bg-[#FF512F] text-white px-4 py-2 rounded-full text-sm font-bold hover:opacity-80">
                       ⬇️ הורד
                     </a>

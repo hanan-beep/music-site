@@ -1,3 +1,5 @@
+import Player from './Player';
+
 async function getFolderContents(folderId: string) {
   const res = await fetch(
     `https://music-site-flame.vercel.app/api/drive?folderId=${folderId}`,
@@ -15,7 +17,7 @@ export default async function AlbumPage({ params, searchParams }: any) {
   const songs = contents.filter((f: any) => f.mimeType !== 'application/vnd.google-apps.folder');
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#ffecd2] via-[#fcb69f] to-[#ffd1a9]" dir="rtl">
+    <main className="min-h-screen bg-gradient-to-br from-[#ffecd2] via-[#fcb69f] to-[#ffd1a9] pb-32" dir="rtl">
       
       <header className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] p-6 text-center shadow-2xl">
         <a href="javascript:history.back()" className="text-white text-sm mb-2 block">→ חזרה</a>
@@ -24,7 +26,6 @@ export default async function AlbumPage({ params, searchParams }: any) {
 
       <div className="p-8">
 
-        {/* תת-תיקיות */}
         {folders.length > 0 && (
           <section className="mb-10">
             <h2 className="text-2xl font-black text-[#DD2476] mb-4">📁 תיקיות</h2>
@@ -41,28 +42,10 @@ export default async function AlbumPage({ params, searchParams }: any) {
           </section>
         )}
 
-        {/* שירים */}
         {songs.length > 0 && (
           <section>
             <h2 className="text-2xl font-black text-[#DD2476] mb-4">🎵 שירים</h2>
-            <div className="flex flex-col gap-3">
-              {songs.map((song: any) => (
-                <div key={song.id}
-                  className="bg-[#ffe8cc] rounded-2xl p-4 flex items-center justify-between shadow-md">
-                  <h3 className="font-bold text-gray-800">{song.name.replace(/\.[^/.]+$/, '')}</h3>
-                  <div className="flex gap-2">
-                    <a href={`https://drive.google.com/uc?export=view&id=${song.id}`}
-                      className="bg-[#DD2476] text-white px-4 py-2 rounded-full text-sm font-bold hover:opacity-80">
-                      ▶️ האזן
-                    </a>
-                    <a href={`https://drive.google.com/uc?export=download&id=${song.id}`}
-                      className="bg-[#FF512F] text-white px-4 py-2 rounded-full text-sm font-bold hover:opacity-80">
-                      ⬇️ הורד
-                    </a>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <Player songs={songs} />
           </section>
         )}
 

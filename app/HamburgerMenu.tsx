@@ -51,6 +51,8 @@ export default function HamburgerMenu() {
           {[
             { href: '/', icon: '🏠', label: 'דף הבית' },
             { href: '/artists', icon: '🎤', label: 'זמרים' },
+            { href: '/albums', icon: '💿', label: 'אלבומים' },
+            { href: '/songs', icon: '🎵', label: 'שירים' },
           ].map((item) => (
             <a
               key={item.href}

@@ -34,7 +34,7 @@ export default function Home() {
         </div>
         <div className="bg-[#ffe8cc] rounded-3xl p-8 text-center hover:scale-105 transition-transform cursor-pointer">
           <div className="text-5xl mb-4">🎵</div>
-          <h3 className="text-xl font-bold text-[#DD2476]">אוספים</h3>
+          <h3 className="text-xl font-bold text-[#DD2476]">שירים</h3>
           <p className="text-gray-400 mt-2">פלייליסטים ואוספים מיוחדים</p>
         </div>
       </section>

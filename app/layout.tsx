@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import HamburgerMenu from "./HamburgerMenu";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "יאללה שירים 💪",
-description: "הארכיון המוזיקלי החרדי הגדול ביותר",
+  description: "הארכיון המוזיקלי החרדי הגדול ביותר",
 };
 
 export default function RootLayout({
@@ -24,10 +25,13 @@ export default function RootLayout({
 }>) {
   return (
     <html
-     lang="he"
+      lang="he"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <HamburgerMenu />
+        {children}
+      </body>
     </html>
   );
 }

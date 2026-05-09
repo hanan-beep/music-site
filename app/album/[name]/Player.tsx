@@ -43,6 +43,7 @@ export default function Player({ songs }: { songs: any[] }) {
             src={`https://drive.google.com/file/d/${current.id}/preview`}
             className="w-full"
             height="80"
+            style={{width: '100%', display: 'block'}}
             allow="autoplay">
           </iframe>
         </div>

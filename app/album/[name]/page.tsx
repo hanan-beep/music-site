@@ -1,5 +1,6 @@
+// app/album/[name]/page.tsx
 import Player from './Player';
-import BackButton from '@/app/BackButton'; // קובץ: app/BackButton.tsx
+import BackButton from '@/app/BackButton';
 
 async function getFolderContents(folderId: string) {
   const res = await fetch(
@@ -22,13 +23,19 @@ export default async function AlbumPage({ params, searchParams }: any) {
   );
 
   return (
-    <main
-      className="min-h-screen bg-gradient-to-br from-[#ffecd2] via-[#fcb69f] to-[#ffd1a9] pb-32"
-      dir="rtl"
-    >
+    <main className="min-h-screen bg-gradient-to-br from-[#ffecd2] via-[#fcb69f] to-[#ffd1a9] pb-32" dir="rtl">
       <header className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] p-6 text-center shadow-2xl">
         <BackButton />
         <h1 className="text-3xl font-black text-white">💿 {albumName}</h1>
+        {/* כפתור הורדת אלבום שלם */}
+        <a
+          href={`https://drive.google.com/drive/folders/${folderId}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 mt-3 bg-white/20 border border-white/50 text-white text-sm font-bold px-4 py-2 rounded-full hover:bg-white/30 transition-colors"
+        >
+          📁 הורד אלבום שלם מדרייב
+        </a>
       </header>
 
       <div className="p-8">
@@ -53,15 +60,13 @@ export default async function AlbumPage({ params, searchParams }: any) {
         {songs.length > 0 && (
           <section>
             <h2 className="text-2xl font-black text-[#DD2476] mb-4">🎵 שירים</h2>
-            <Player songs={songs} />
+            <Player songs={songs} folderId={folderId} />
           </section>
         )}
       </div>
 
       <footer className="bg-[#ffe8cc] text-center py-6 mt-8">
-        <p className="text-[#DD2476] font-bold">
-          ✨ ♩ ♪ ♫ ♬ יאללה שירים 💪 ♬ ♫ ♪ ♩ ✨
-        </p>
+        <p className="text-[#DD2476] font-bold">✨ ♩ ♪ ♫ ♬ יאללה שירים 💪 ♬ ♫ ♪ ♩ ✨</p>
         <p className="text-gray-500 text-sm mt-2">© כל הזכויות שמורות | By Yael</p>
       </footer>
     </main>

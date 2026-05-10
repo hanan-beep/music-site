@@ -14,7 +14,7 @@ export default function Contact() {
         <h1 className="text-3xl font-black text-white">✉️ צור קשר</h1>
       </header>
 
-      <div className="max-w-2xl mx-auto px-6 py-12 flex flex-col gap-8">
+      <div className="max-w-2xl mx-auto px-6 py-12 flex flex-col gap-6">
 
         {/* כרטיס טקסט */}
         <div className="bg-white/70 rounded-3xl p-8 shadow-lg text-gray-700 leading-relaxed text-center">
@@ -29,26 +29,17 @@ export default function Contact() {
           <p className="text-lg mb-4">
             יש לכם הערה, הארה או שסתם בא לכם להגיד ״וואלה, אחלה אתר״? דברו אלינו! שלחו מייל וננסה לסדר את זה כמה שיותר מהר.
           </p>
-          <p className="text-lg mb-4 text-gray-500">
-            בכל זאת, יש פה המון שירים להקשיב להם... 😉
-          </p>
+          <p className="text-gray-500 mb-4 text-base">בכל זאת, יש פה המון שירים להקשיב להם... 😉</p>
           <p className="text-xl font-black text-[#DD2476]">מחכים לשמוע מכם! 💪</p>
         </div>
 
-        {/* כרטיס יצירת קשר */}
+        {/* כרטיס צור קשר — קטן ומינימלי */}
         <a
           href={mailtoLink}
-          className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] rounded-3xl p-8 shadow-xl text-center hover:scale-105 transition-transform block"
+          className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] rounded-2xl px-6 py-4 shadow-lg flex items-center justify-center gap-3 hover:scale-105 transition-transform"
         >
-          <div className="text-6xl mb-4">📬</div>
-          <h3 className="text-2xl font-black text-white mb-2">לחצו כאן לשליחת הודעה</h3>
-          <p className="text-white/80 text-sm mb-4">
-            יפתח חלון מייל עם הכתובת שלנו ממולאת אוטומטית
-          </p>
-          <div className="inline-block bg-white text-[#DD2476] font-black text-lg px-8 py-3 rounded-2xl shadow">
-            ✉️ שלחו הודעה
-          </div>
-          <p className="text-white/50 text-xs mt-4">yaele9090@gmail.com</p>
+          <span className="text-2xl">📩</span>
+          <span className="text-white font-black text-lg">שלחו הודעה</span>
         </a>
 
       </div>

@@ -2,32 +2,31 @@
 import Player from '@/app/album/[name]/Player';
 import BackButton from '@/app/BackButton';
 
-async function getArtistContents(artistId: string) {
+async function getArtistData(artistName: string) {
+  const res = await fetch('https://music-site-flame.vercel.app/api/drive', {
+    next: { revalidate: 3600 },
+  });
+  const artists = await res.json();
+  return artists.find((a: any) => a.name === artistName);
+}
+
+async function getFolderContents(folderId: string) {
   const res = await fetch(
-    `https://music-site-flame.vercel.app/api/drive?folderId=${artistId}`,
+    `https://music-site-flame.vercel.app/api/drive?folderId=${folderId}`,
     { cache: 'no-store' }
   );
   return res.json();
 }
 
-async function getArtistId(artistName: string) {
-  const res = await fetch('https://music-site-flame.vercel.app/api/drive', {
-    next: { revalidate: 3600 },
-  });
-  const artists = await res.json();
-  const artist = artists.find((a: any) => a.name === artistName);
-  return artist?.id;
-}
-
 export default async function ArtistPage({ params }: any) {
   const artistName = decodeURIComponent((await params).name);
-  const artistId = await getArtistId(artistName);
+  const artist = await getArtistData(artistName);
 
-  if (!artistId) {
+  if (!artist) {
     return <div dir="rtl" className="p-8 text-center">זמר לא נמצא</div>;
   }
 
-  const contents = await getArtistContents(artistId);
+  const contents = await getFolderContents(artist.id);
   const folders = contents.filter(
     (f: any) => f.mimeType === 'application/vnd.google-apps.folder'
   );
@@ -40,6 +39,15 @@ export default async function ArtistPage({ params }: any) {
       <header className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] p-6 text-center shadow-2xl">
         <BackButton label="→ חזרה לזמרים" />
         <h1 className="text-3xl font-black text-white">🎤 {artistName}</h1>
+        {/* כפתור הורדת כל שירי הזמר */}
+        <a
+          href={`https://drive.google.com/drive/folders/${artist.id}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 mt-3 bg-white/20 border border-white/50 text-white text-sm font-bold px-4 py-2 rounded-full hover:bg-white/30 transition-colors"
+        >
+          📁 הורד את כל השירים מדרייב
+        </a>
       </header>
 
       <div className="p-8 pb-32">
@@ -48,9 +56,11 @@ export default async function ArtistPage({ params }: any) {
             <h2 className="text-2xl font-black text-[#DD2476] mb-4">💿 אלבומים</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {folders.map((folder: any) => (
-                <a key={folder.id}
+                <a
+                  key={folder.id}
                   href={`/album/${folder.id}?name=${encodeURIComponent(folder.name)}`}
-                  className="bg-[#ffe8cc] rounded-2xl p-4 text-center hover:scale-105 transition-transform shadow-md block">
+                  className="bg-[#ffe8cc] rounded-2xl p-4 text-center hover:scale-105 transition-transform shadow-md block"
+                >
                   <div className="text-4xl mb-2">💿</div>
                   <h3 className="font-bold text-[#DD2476]">{folder.name}</h3>
                 </a>
@@ -62,8 +72,7 @@ export default async function ArtistPage({ params }: any) {
         {songs.length > 0 && (
           <section>
             <h2 className="text-2xl font-black text-[#DD2476] mb-4">🎵 שירים</h2>
-            {/* Player עם iframe — לא href */}
-            <Player songs={songs} />
+            <Player songs={songs} folderId={artist.id} />
           </section>
         )}
       </div>

@@ -1,17 +1,19 @@
 // app/songs/page.tsx
-// שולף שירים מכל האלבומים של כל הזמרים + תיקייה נוספת (EXTRA_FOLDER_ID)
 'use client';
 import { useState, useEffect, useMemo } from 'react';
 
-// ← כשתביאי את ה-ID של תיקיית השירים הנוספת, תחליפי כאן:
 const EXTRA_FOLDER_ID = '1b6Z7prAcoSS8fwpk8hqsD6g-loB-hbn1';
+
+// רק קבצי אודיו
+const AUDIO_EXTENSIONS = /\.(mp3|m4a|aac|wav|flac|ogg|opus|wma)$/i;
 
 export default function Songs() {
   const [songs, setSongs] = useState<any[]>([]);
+  const [extraSongs, setExtraSongs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [current, setCurrent] = useState<any>(null);
   const [search, setSearch] = useState('');
-  const [sort, setSort] = useState<'alpha-asc' | 'alpha-desc'>('alpha-asc');
+  const [sort, setSort] = useState<'alpha-asc' | 'alpha-desc' | 'newest'>('alpha-asc');
 
   useEffect(() => {
     async function load() {
@@ -21,7 +23,7 @@ export default function Songs() {
       const artistsRes = await fetch(BASE);
       const artists = await artistsRes.json();
 
-      // שולף תוכן כל זמר (אלבומים + שירים ישירים)
+      // שולף תוכן כל זמר
       const artistContents = await Promise.all(
         artists.map(async (artist: any) => {
           const res = await fetch(`${BASE}?folderId=${artist.id}`);
@@ -29,14 +31,17 @@ export default function Songs() {
         })
       );
 
-      // שולף שירים מתוך האלבומים (רמה 2)
+      // שולף שירים מתוך האלבומים
       const albumFetches = await Promise.all(
         artistContents.flatMap(({ artist, contents }) => {
           const folders = contents.filter(
             (f: any) => f.mimeType === 'application/vnd.google-apps.folder'
           );
           const directSongs = contents
-            .filter((f: any) => f.mimeType !== 'application/vnd.google-apps.folder')
+            .filter((f: any) =>
+              f.mimeType !== 'application/vnd.google-apps.folder' &&
+              AUDIO_EXTENSIONS.test(f.name)
+            )
             .map((s: any) => ({ ...s, artistName: artist.name, albumName: '' }));
 
           return [
@@ -45,7 +50,10 @@ export default function Songs() {
               const res = await fetch(`${BASE}?folderId=${folder.id}`);
               const items = await res.json();
               return items
-                .filter((f: any) => f.mimeType !== 'application/vnd.google-apps.folder')
+                .filter((f: any) =>
+                  f.mimeType !== 'application/vnd.google-apps.folder' &&
+                  AUDIO_EXTENSIONS.test(f.name)
+                )
                 .map((s: any) => ({
                   ...s,
                   artistName: artist.name,
@@ -56,36 +64,58 @@ export default function Songs() {
         })
       );
 
-      // תיקייה נוספת (אם הוגדרה)
-      let extraSongs: any[] = [];
+      // תיקייה נוספת — שירים חדשים (שומרים בסדר המקורי מהדרייב)
+      let extra: any[] = [];
       if (EXTRA_FOLDER_ID) {
         const res = await fetch(`${BASE}?folderId=${EXTRA_FOLDER_ID}`);
         const items = await res.json();
-        extraSongs = items
-          .filter((f: any) => f.mimeType !== 'application/vnd.google-apps.folder')
-          .map((s: any) => ({ ...s, artistName: '', albumName: 'שירים נוספים' }));
+        extra = items
+          .filter((f: any) =>
+            f.mimeType !== 'application/vnd.google-apps.folder' &&
+            AUDIO_EXTENSIONS.test(f.name)
+          )
+          .map((s: any, index: number) => ({
+            ...s,
+            artistName: '',
+            albumName: 'שירים חדשים',
+            driveOrder: index, // סדר מקורי מהדרייב = מהחדש לישן
+          }));
       }
 
-      setSongs([...albumFetches.flat(), ...extraSongs]);
+      setSongs(albumFetches.flat());
+      setExtraSongs(extra);
       setLoading(false);
     }
     load();
   }, []);
 
+  const allSongs = useMemo(() => [...songs, ...extraSongs], [songs, extraSongs]);
+
   const filtered = useMemo(() => {
-    let list = songs.filter(s =>
+    let list = allSongs.filter(s =>
       s.name.replace(/\.[^/.]+$/, '').toLowerCase().includes(search.toLowerCase()) ||
-      s.artistName.toLowerCase().includes(search.toLowerCase())
+      (s.artistName || '').toLowerCase().includes(search.toLowerCase())
     );
-    list = [...list].sort((a, b) => {
-      const nameA = a.name.replace(/\.[^/.]+$/, '');
-      const nameB = b.name.replace(/\.[^/.]+$/, '');
-      return sort === 'alpha-asc'
-        ? nameA.localeCompare(nameB, 'he')
-        : nameB.localeCompare(nameA, 'he');
-    });
+
+    if (sort === 'newest') {
+      // מציג רק שירים מהתיקייה החדשה, בסדר הדרייב
+      list = extraSongs
+        .filter(s =>
+          s.name.replace(/\.[^/.]+$/, '').toLowerCase().includes(search.toLowerCase()) ||
+          (s.artistName || '').toLowerCase().includes(search.toLowerCase())
+        )
+        .sort((a, b) => a.driveOrder - b.driveOrder);
+    } else {
+      list = [...list].sort((a, b) => {
+        const nameA = a.name.replace(/\.[^/.]+$/, '');
+        const nameB = b.name.replace(/\.[^/.]+$/, '');
+        return sort === 'alpha-asc'
+          ? nameA.localeCompare(nameB, 'he')
+          : nameB.localeCompare(nameA, 'he');
+      });
+    }
     return list;
-  }, [songs, search, sort]);
+  }, [allSongs, extraSongs, search, sort]);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#ffecd2] via-[#fcb69f] to-[#ffd1a9] pb-32" dir="rtl">
@@ -95,7 +125,6 @@ export default function Songs() {
         <h1 className="text-3xl font-black text-white">🎵 שירים</h1>
       </header>
 
-      {/* חיפוש + מיון */}
       <div className="px-6 pt-6 pb-2 flex flex-col sm:flex-row gap-3">
         <input
           type="text"
@@ -109,8 +138,9 @@ export default function Songs() {
           onChange={e => setSort(e.target.value as any)}
           className="rounded-2xl px-4 py-3 border-2 border-[#DD2476]/30 bg-white/80 text-gray-800 font-bold focus:outline-none focus:border-[#DD2476] shadow"
         >
-          <option value="alpha-asc">א → ת</option>
-          <option value="alpha-desc">ת → א</option>
+          <option value="alpha-asc">א ← ת</option>
+          <option value="alpha-desc">ת ← א</option>
+          <option value="newest">🆕 חדשים ביותר</option>
         </select>
       </div>
 
@@ -128,9 +158,11 @@ export default function Songs() {
                 <h3 className="font-bold text-gray-800 truncate">
                   {song.name.replace(/\.[^/.]+$/, '')}
                 </h3>
-                {song.artistName && (
+                {(song.artistName || song.albumName) && (
                   <p className="text-sm text-[#DD2476] font-semibold truncate">
-                    🎤 {song.artistName}{song.albumName ? ` · ${song.albumName}` : ''}
+                    {song.artistName && `🎤 ${song.artistName}`}
+                    {song.artistName && song.albumName && ' · '}
+                    {song.albumName && song.albumName}
                   </p>
                 )}
               </div>
@@ -156,7 +188,6 @@ export default function Songs() {
         </section>
       )}
 
-      {/* נגן תחתון */}
       {current && (
         <div className="fixed bottom-0 left-0 right-0 w-full shadow-2xl" style={{ zIndex: 100 }}>
           <div className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] px-6 py-2 flex items-center justify-between w-full">

@@ -11,6 +11,10 @@ export default function HamburgerMenu() {
     { href: '/songs',   icon: '🎵', label: 'שירים' },
   ];
 
+  const subject = encodeURIComponent('בקשה / הערה – יאללה שירים');
+  const body = encodeURIComponent('שלום,\n\nאני פונה בנוגע לאתר יאללה שירים.\n\n');
+  const mailtoLink = `mailto:yaele9090@gmail.com?subject=${subject}&body=${body}`;
+
   return (
     <>
       <button
@@ -61,6 +65,22 @@ export default function HamburgerMenu() {
               {item.label}
             </a>
           ))}
+
+          {/* קו הפרדה */}
+          <div className="border-t border-white/20 my-2" />
+
+          {/* צור קשר */}
+          <a
+            href={mailtoLink}
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-4 px-4 py-3 rounded-2xl text-white font-bold text-lg hover:bg-white/20 transition-colors"
+          >
+            <span className="text-2xl">✉️</span>
+            <div>
+              <div>צור קשר</div>
+              <div className="text-white/60 text-sm font-normal">חסר שיר? יש הערה?</div>
+            </div>
+          </a>
         </nav>
 
         <div className="absolute bottom-6 right-6 left-6 text-center text-white/60 text-sm">

@@ -1,3 +1,4 @@
+// app/api/drive/route.ts
 import { google } from 'googleapis';
 
 const auth = new google.auth.GoogleAuth({
@@ -26,11 +27,13 @@ export async function GET(request: Request) {
 
     const drive = google.drive({ version: 'v3', auth });
 
+    // אם ביקשו תיקייה ספציפית — מחזיר ישירות
     if (folderId) {
       const contents = await getFolderContents(folderId, drive);
       return Response.json(contents);
     }
 
+    // שולף את שתי התיקיות הראשיות
     const folder1 = process.env.GOOGLE_FOLDER_1!;
     const folder2 = process.env.GOOGLE_FOLDER_2!;
 
@@ -39,11 +42,21 @@ export async function GET(request: Request) {
       getFolderContents(folder2, drive),
     ]);
 
-    const allFiles = [...files1, ...files2];
-    
-    const artists = allFiles
-      .filter(f => f.mimeType === 'application/vnd.google-apps.folder')
-      .map(f => ({ id: f.id, name: f.name }));
+    // מאחד — קודם השיתופי, אחר כך הפרטי
+    // מסיר כפילויות לפי שם (case-insensitive)
+    const seen = new Set<string>();
+    const artists: { id: string; name: string }[] = [];
+
+    for (const f of [...files1, ...files2]) {
+      if (f.mimeType !== 'application/vnd.google-apps.folder') continue;
+      const key = f.name.trim().toLowerCase();
+      if (seen.has(key)) continue; // כפילות — דלג
+      seen.add(key);
+      artists.push({ id: f.id, name: f.name });
+    }
+
+    // ממיין א-ב
+    artists.sort((a, b) => a.name.localeCompare(b.name, 'he'));
 
     return Response.json(artists);
   } catch (error) {

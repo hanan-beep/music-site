@@ -4,9 +4,15 @@ import { useState } from 'react';
 export default function HamburgerMenu() {
   const [open, setOpen] = useState(false);
 
+  const links = [
+    { href: '/',        icon: '🏠', label: 'דף הבית' },
+    { href: '/artists', icon: '🎤', label: 'זמרים' },
+    { href: '/albums',  icon: '💿', label: 'אלבומים' },
+    { href: '/songs',   icon: '🎵', label: 'שירים' },
+  ];
+
   return (
     <>
-      {/* כפתור המבורגר */}
       <button
         onClick={() => setOpen(true)}
         aria-label="פתח תפריט"
@@ -19,7 +25,6 @@ export default function HamburgerMenu() {
         </div>
       </button>
 
-      {/* Overlay */}
       {open && (
         <div
           className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
@@ -27,14 +32,12 @@ export default function HamburgerMenu() {
         />
       )}
 
-      {/* Drawer */}
       <aside
         className={`fixed top-0 left-0 h-full w-72 z-50 bg-gradient-to-b from-[#FF512F] to-[#DD2476] shadow-2xl transition-transform duration-300 ease-in-out ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
         dir="rtl"
       >
-        {/* כותרת drawer */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-white/20">
           <h2 className="text-white font-black text-xl">יאללה שירים 💪</h2>
           <button
@@ -46,14 +49,8 @@ export default function HamburgerMenu() {
           </button>
         </div>
 
-        {/* קישורים */}
         <nav className="flex flex-col p-6 gap-2">
-          {[
-            { href: '/', icon: '🏠', label: 'דף הבית' },
-            { href: '/artists', icon: '🎤', label: 'זמרים' },
-            { href: '/albums', icon: '💿', label: 'אלבומים' },
-            { href: '/songs', icon: '🎵', label: 'שירים' },
-          ].map((item) => (
+          {links.map((item) => (
             <a
               key={item.href}
               href={item.href}
@@ -66,7 +63,6 @@ export default function HamburgerMenu() {
           ))}
         </nav>
 
-        {/* Footer בתוך drawer */}
         <div className="absolute bottom-6 right-6 left-6 text-center text-white/60 text-sm">
           ✨ ♩ ♪ ♫ ♬ ♫ ♪ ♩ ✨
         </div>

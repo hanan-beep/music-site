@@ -1,12 +1,32 @@
-// app/album/[name]/Player.tsx — ללא כפתור הורדה כפול
+// app/album/[name]/Player.tsx
 'use client';
 import { useState } from 'react';
 
-export default function Player({ songs }: { songs: any[] }) {
+export default function Player({
+  songs,
+  folderId,
+}: {
+  songs: any[];
+  folderId?: string;
+}) {
   const [current, setCurrent] = useState<any>(null);
 
   return (
     <div>
+      {/* כפתור הורדת תיקייה שלמה */}
+      {folderId && (
+        <div className="mb-4 flex justify-end">
+          <a
+            href={`https://drive.google.com/drive/folders/${folderId}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-white border-2 border-[#DD2476] text-[#DD2476] font-black px-5 py-2.5 rounded-2xl hover:bg-[#DD2476] hover:text-white transition-colors shadow"
+          >
+            📁 הורד תיקייה שלמה מדרייב
+          </a>
+        </div>
+      )}
+
       <div className="flex flex-col gap-3">
         {songs.map((song: any) => (
           <div key={song.id}

@@ -27,15 +27,6 @@ export default async function AlbumPage({ params, searchParams }: any) {
       <header className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] p-6 text-center shadow-2xl">
         <BackButton />
         <h1 className="text-3xl font-black text-white">💿 {albumName}</h1>
-        {/* כפתור הורדת אלבום שלם */}
-        <a
-          href={`https://drive.google.com/drive/folders/${folderId}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 mt-3 bg-white/20 border border-white/50 text-white text-sm font-bold px-4 py-2 rounded-full hover:bg-white/30 transition-colors"
-        >
-          📁 הורד אלבום שלם מדרייב
-        </a>
       </header>
 
       <div className="p-8">
@@ -44,11 +35,9 @@ export default async function AlbumPage({ params, searchParams }: any) {
             <h2 className="text-2xl font-black text-[#DD2476] mb-4">📁 תיקיות</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {folders.map((folder: any) => (
-                <a
-                  key={folder.id}
+                <a key={folder.id}
                   href={`/album/${folder.id}?name=${encodeURIComponent(folder.name)}`}
-                  className="bg-[#ffe8cc] rounded-2xl p-4 text-center hover:scale-105 transition-transform shadow-md block"
-                >
+                  className="bg-[#ffe8cc] rounded-2xl p-4 text-center hover:scale-105 transition-transform shadow-md block">
                   <div className="text-4xl mb-2">📁</div>
                   <h3 className="font-bold text-[#DD2476]">{folder.name}</h3>
                 </a>

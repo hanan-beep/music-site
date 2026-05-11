@@ -39,14 +39,6 @@ export default async function ArtistPage({ params }: any) {
       <header className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] p-6 text-center shadow-2xl">
         <BackButton label="→ חזרה לזמרים" />
         <h1 className="text-3xl font-black text-white">🎤 {artistName}</h1>
-        <a
-          href={`https://drive.google.com/drive/folders/${artist.id}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 mt-3 bg-white/20 border border-white/50 text-white text-sm font-bold px-4 py-2 rounded-full hover:bg-white/30 transition-colors"
-        >
-          📁 הורד את כל השירים מדרייב
-        </a>
       </header>
 
       <div className="p-8 pb-32">
@@ -69,8 +61,7 @@ export default async function ArtistPage({ params }: any) {
         {songs.length > 0 && (
           <section>
             <h2 className="text-2xl font-black text-[#DD2476] mb-4">🎵 שירים</h2>
-            {/* ללא folderId — הכפתור כבר בכותרת */}
-            <Player songs={songs} />
+            <Player songs={songs} folderId={artist.id} />
           </section>
         )}
       </div>

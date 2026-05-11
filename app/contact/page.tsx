@@ -6,11 +6,16 @@ import BackButton from '@/app/BackButton';
 export default function Contact() {
   const [name, setName] = useState('');
   const [message, setMessage] = useState('');
-  const [sent, setSent] = useState(false);
 
-  const subject = encodeURIComponent(`בקשה / הערה מ-${name || 'גולש'} – יאללה שירים`);
-  const body = encodeURIComponent(`שם: ${name}\n\n${message}`);
-  const mailtoLink = `mailto:yaele9090@gmail.com?subject=${subject}&body=${body}`;
+  function handleSend() {
+    const subject = encodeURIComponent(`בקשה / הערה מ-${name || 'גולש'} – יאללה שירים`);
+    const body = encodeURIComponent(`שם: ${name}\n\n${message}`);
+    // פותח Gmail ישירות בדפדפן — עובד לכולם
+    window.open(
+      `https://mail.google.com/mail/?view=cm&to=yaele9090@gmail.com&su=${subject}&body=${body}`,
+      '_blank'
+    );
+  }
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#ffecd2] via-[#fcb69f] to-[#ffd1a9]" dir="rtl">
@@ -21,7 +26,6 @@ export default function Contact() {
 
       <div className="max-w-2xl mx-auto px-6 py-12 flex flex-col gap-6">
 
-        {/* טקסט */}
         <div className="bg-white/70 rounded-3xl p-8 shadow-lg text-gray-700 leading-relaxed text-center">
           <p className="text-3xl mb-4">🎵</p>
           <h2 className="text-2xl font-black text-[#DD2476] mb-6">חסר לכם איזה ביט?</h2>
@@ -32,7 +36,6 @@ export default function Contact() {
           <p className="text-xl font-black text-[#DD2476]">מחכים לשמוע מכם! 💪</p>
         </div>
 
-        {/* טופס */}
         <div className="bg-white/70 rounded-3xl p-8 shadow-lg flex flex-col gap-4">
           <h3 className="text-xl font-black text-[#DD2476] text-center">📬 שלחו הודעה</h3>
 
@@ -52,19 +55,12 @@ export default function Contact() {
             className="rounded-2xl px-4 py-3 border-2 border-[#DD2476]/30 bg-white text-gray-800 font-bold placeholder-gray-400 focus:outline-none focus:border-[#DD2476] resize-none"
           />
 
-          <a
-            href={mailtoLink}
-            onClick={() => setSent(true)}
+          <button
+            onClick={handleSend}
             className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] text-white font-black text-lg px-8 py-4 rounded-2xl text-center hover:scale-105 transition-transform shadow-lg"
           >
-            📩 שלחו הודעה
-          </a>
-
-          {sent && (
-            <p className="text-center text-green-600 font-bold">
-              ✅ נפתח חלון מייל — תשלחו ונחזור אליכם בהקדם!
-            </p>
-          )}
+            📩 שלחו הודעה דרך Gmail
+          </button>
         </div>
 
       </div>

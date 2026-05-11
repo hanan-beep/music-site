@@ -114,7 +114,7 @@ export default function Contact() {
                 disabled={status === 'loading'}
                 className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] text-white font-black text-lg px-8 py-4 rounded-2xl text-center hover:scale-105 transition-transform shadow-lg disabled:opacity-60 disabled:scale-100"
               >
-                {status === 'loading' ? '⏳ שולח...' : ' שלח📩'}
+                {status === 'loading' ? '⏳ שולח...' : ' שליחה📩'}
               </button>
             </>
           )}

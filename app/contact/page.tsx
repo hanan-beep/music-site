@@ -50,7 +50,7 @@ export default function Contact() {
     <main className="min-h-screen bg-gradient-to-br from-[#ffecd2] via-[#fcb69f] to-[#ffd1a9]" dir="rtl">
       <header className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] p-6 text-center shadow-2xl">
         <BackButton />
-        <h1 className="text-3xl font-black text-white">✉️ צור קשר</h1>
+        <h1 className="text-3xl font-black text-white">צור קשר✉️ </h1>
       </header>
 
       <div className="max-w-2xl mx-auto px-6 py-12 flex flex-col gap-6">
@@ -114,7 +114,7 @@ export default function Contact() {
                 disabled={status === 'loading'}
                 className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] text-white font-black text-lg px-8 py-4 rounded-2xl text-center hover:scale-105 transition-transform shadow-lg disabled:opacity-60 disabled:scale-100"
               >
-                {status === 'loading' ? '⏳ שולח...' : ' שלחו הודעה📩'}
+                {status === 'loading' ? '⏳ שולח...' : ' שלח📩'}
               </button>
             </>
           )}

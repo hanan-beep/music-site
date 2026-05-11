@@ -68,7 +68,7 @@ export default function Contact() {
 
         {/* טופס */}
         <div className="bg-white/70 rounded-3xl p-8 shadow-lg flex flex-col gap-4">
-          <h3 className="text-xl font-black text-[#DD2476] text-center">📬 שלחו הודעה</h3>
+          <h3 className="text-xl font-black text-[#DD2476] text-center"> שלחו הודעה📬</h3>
 
           {status === 'success' ? (
             <div className="text-center py-8">
@@ -114,7 +114,7 @@ export default function Contact() {
                 disabled={status === 'loading'}
                 className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] text-white font-black text-lg px-8 py-4 rounded-2xl text-center hover:scale-105 transition-transform shadow-lg disabled:opacity-60 disabled:scale-100"
               >
-                {status === 'loading' ? '⏳ שולח...' : '📩 שלחו הודעה'}
+                {status === 'loading' ? '⏳ שולח...' : ' שלחו הודעה📩'}
               </button>
             </>
           )}

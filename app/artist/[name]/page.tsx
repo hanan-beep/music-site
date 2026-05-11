@@ -44,7 +44,18 @@ export default async function ArtistPage({ params }: any) {
       <div className="p-8 pb-32">
         {folders.length > 0 && (
           <section className="mb-10">
-            <h2 className="text-2xl font-black text-[#DD2476] mb-4">💿 אלבומים</h2>
+            {/* כותרת + כפתור הורדה בצד */}
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-black text-[#DD2476]">💿 אלבומים</h2>
+              <a
+                href={`https://drive.google.com/drive/folders/${artist.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-white border-2 border-[#DD2476] text-[#DD2476] font-bold text-sm px-4 py-2 rounded-2xl hover:bg-[#DD2476] hover:text-white transition-colors shadow"
+              >
+                📁 הורד הכל מדרייב
+              </a>
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {folders.map((folder: any) => (
                 <a key={folder.id}

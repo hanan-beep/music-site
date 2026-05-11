@@ -3,18 +3,47 @@
 import { useState } from 'react';
 import BackButton from '@/app/BackButton';
 
+type Status = 'idle' | 'loading' | 'success' | 'error';
+
 export default function Contact() {
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
+  const [status, setStatus] = useState<Status>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
 
-  function handleSend() {
-    const subject = encodeURIComponent(`בקשה / הערה מ-${name || 'גולש'} – יאללה שירים`);
-    const body = encodeURIComponent(`שם: ${name}\n\n${message}`);
-    // פותח Gmail ישירות בדפדפן — עובד לכולם
-    window.open(
-      `https://mail.google.com/mail/?view=cm&to=yaele9090@gmail.com&su=${subject}&body=${body}`,
-      '_blank'
-    );
+  async function handleSend() {
+    setErrorMsg('');
+
+    // ולידציה
+    if (!email || !message) {
+      setErrorMsg('נא למלא מייל והודעה');
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setErrorMsg('כתובת המייל אינה תקינה');
+      return;
+    }
+
+    setStatus('loading');
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, message }),
+      });
+      if (res.ok) {
+        setStatus('success');
+      } else {
+        const data = await res.json();
+        setErrorMsg(data.error || 'שגיאה בשליחה');
+        setStatus('error');
+      }
+    } catch {
+      setErrorMsg('שגיאת תקשורת, נסו שוב');
+      setStatus('error');
+    }
   }
 
   return (
@@ -26,6 +55,7 @@ export default function Contact() {
 
       <div className="max-w-2xl mx-auto px-6 py-12 flex flex-col gap-6">
 
+        {/* טקסט */}
         <div className="bg-white/70 rounded-3xl p-8 shadow-lg text-gray-700 leading-relaxed text-center">
           <p className="text-3xl mb-4">🎵</p>
           <h2 className="text-2xl font-black text-[#DD2476] mb-6">חסר לכם איזה ביט?</h2>
@@ -36,31 +66,58 @@ export default function Contact() {
           <p className="text-xl font-black text-[#DD2476]">מחכים לשמוע מכם! 💪</p>
         </div>
 
+        {/* טופס */}
         <div className="bg-white/70 rounded-3xl p-8 shadow-lg flex flex-col gap-4">
           <h3 className="text-xl font-black text-[#DD2476] text-center">📬 שלחו הודעה</h3>
 
-          <input
-            type="text"
-            placeholder="השם שלך (אופציונלי)"
-            value={name}
-            onChange={e => setName(e.target.value)}
-            className="rounded-2xl px-4 py-3 border-2 border-[#DD2476]/30 bg-white text-gray-800 font-bold placeholder-gray-400 focus:outline-none focus:border-[#DD2476]"
-          />
+          {status === 'success' ? (
+            <div className="text-center py-8">
+              <p className="text-5xl mb-4">🎉</p>
+              <p className="text-2xl font-black text-[#DD2476]">תודה על הפנייה!</p>
+              <p className="text-gray-600 mt-2">נחזור אליכם בהקדם 💪</p>
+            </div>
+          ) : (
+            <>
+              <input
+                type="text"
+                placeholder="השם שלך (אופציונלי)"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                disabled={status === 'loading'}
+                className="rounded-2xl px-4 py-3 border-2 border-[#DD2476]/30 bg-white text-gray-800 font-bold placeholder-gray-400 focus:outline-none focus:border-[#DD2476] disabled:opacity-50"
+              />
 
-          <textarea
-            placeholder="מה תרצו לכתוב? חסר שיר? יש הערה?"
-            value={message}
-            onChange={e => setMessage(e.target.value)}
-            rows={4}
-            className="rounded-2xl px-4 py-3 border-2 border-[#DD2476]/30 bg-white text-gray-800 font-bold placeholder-gray-400 focus:outline-none focus:border-[#DD2476] resize-none"
-          />
+              <input
+                type="email"
+                placeholder="המייל שלך *"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                disabled={status === 'loading'}
+                className="rounded-2xl px-4 py-3 border-2 border-[#DD2476]/30 bg-white text-gray-800 font-bold placeholder-gray-400 focus:outline-none focus:border-[#DD2476] disabled:opacity-50"
+              />
 
-          <button
-            onClick={handleSend}
-            className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] text-white font-black text-lg px-8 py-4 rounded-2xl text-center hover:scale-105 transition-transform shadow-lg"
-          >
-            📩 שלחו הודעה דרך Gmail
-          </button>
+              <textarea
+                placeholder="מה תרצו לכתוב? חסר שיר? יש הערה? *"
+                value={message}
+                onChange={e => setMessage(e.target.value)}
+                disabled={status === 'loading'}
+                rows={4}
+                className="rounded-2xl px-4 py-3 border-2 border-[#DD2476]/30 bg-white text-gray-800 font-bold placeholder-gray-400 focus:outline-none focus:border-[#DD2476] resize-none disabled:opacity-50"
+              />
+
+              {errorMsg && (
+                <p className="text-red-500 font-bold text-center">⚠️ {errorMsg}</p>
+              )}
+
+              <button
+                onClick={handleSend}
+                disabled={status === 'loading'}
+                className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] text-white font-black text-lg px-8 py-4 rounded-2xl text-center hover:scale-105 transition-transform shadow-lg disabled:opacity-60 disabled:scale-100"
+              >
+                {status === 'loading' ? '⏳ שולח...' : '📩 שלחו הודעה'}
+              </button>
+            </>
+          )}
         </div>
 
       </div>

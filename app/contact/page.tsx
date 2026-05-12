@@ -71,7 +71,7 @@ export default function Contact() {
                 onClick={resetForm}
                 className="mt-2 bg-gradient-to-r from-[#FF512F] to-[#DD2476] text-white font-black px-6 py-3 rounded-2xl hover:scale-105 transition-transform shadow"
               >
-                📩 לפנייה נוספת — לחצו כאן
+                📩 לפנייה נוספת - לחצו כאן
               </button>
             </div>
           ) : (

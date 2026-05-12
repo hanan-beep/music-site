@@ -1,4 +1,3 @@
-// app/contact/page.tsx
 'use client';
 import { useState } from 'react';
 import BackButton from '@/app/BackButton';
@@ -12,19 +11,16 @@ export default function Contact() {
   const [status, setStatus] = useState<Status>('idle');
   const [errorMsg, setErrorMsg] = useState('');
 
+  function resetForm() {
+    setName(''); setEmail(''); setMessage('');
+    setStatus('idle'); setErrorMsg('');
+  }
+
   async function handleSend() {
     setErrorMsg('');
-
-    // ולידציה
-    if (!email || !message) {
-      setErrorMsg('נא למלא מייל והודעה');
-      return;
-    }
+    if (!email || !message) { setErrorMsg('נא למלא מייל והודעה'); return; }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setErrorMsg('כתובת המייל אינה תקינה');
-      return;
-    }
+    if (!emailRegex.test(email)) { setErrorMsg('כתובת המייל אינה תקינה'); return; }
 
     setStatus('loading');
     try {
@@ -33,9 +29,8 @@ export default function Contact() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, message }),
       });
-      if (res.ok) {
-        setStatus('success');
-      } else {
+      if (res.ok) { setStatus('success'); }
+      else {
         const data = await res.json();
         setErrorMsg(data.error || 'שגיאה בשליחה');
         setStatus('error');
@@ -50,12 +45,10 @@ export default function Contact() {
     <main className="min-h-screen bg-gradient-to-br from-[#ffecd2] via-[#fcb69f] to-[#ffd1a9]" dir="rtl">
       <header className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] p-6 text-center shadow-2xl">
         <BackButton />
-        <h1 className="text-3xl font-black text-white">צור קשר✉️ </h1>
+        <h1 className="text-3xl font-black text-white">✉️ צור קשר</h1>
       </header>
 
       <div className="max-w-2xl mx-auto px-6 py-12 flex flex-col gap-6">
-
-        {/* טקסט */}
         <div className="bg-white/70 rounded-3xl p-8 shadow-lg text-gray-700 leading-relaxed text-center">
           <p className="text-3xl mb-4">🎵</p>
           <h2 className="text-2xl font-black text-[#DD2476] mb-6">חסר לכם איזה ביט?</h2>
@@ -66,60 +59,44 @@ export default function Contact() {
           <p className="text-xl font-black text-[#DD2476]">מחכים לשמוע מכם! 💪</p>
         </div>
 
-        {/* טופס */}
         <div className="bg-white/70 rounded-3xl p-8 shadow-lg flex flex-col gap-4">
-          <h3 className="text-xl font-black text-[#DD2476] text-center"> שלחו הודעה📬</h3>
+          <h3 className="text-xl font-black text-[#DD2476] text-center">📬 שלחו הודעה</h3>
 
           {status === 'success' ? (
-            <div className="text-center py-8">
-              <p className="text-5xl mb-4">🎉</p>
+            <div className="text-center py-6 flex flex-col gap-4">
+              <p className="text-5xl">🎉</p>
               <p className="text-2xl font-black text-[#DD2476]">תודה על הפנייה!</p>
-              <p className="text-gray-600 mt-2">נחזור אליכם בהקדם 💪</p>
+              <p className="text-gray-600">נחזור אליכם בהקדם 💪</p>
+              <button
+                onClick={resetForm}
+                className="mt-2 bg-gradient-to-r from-[#FF512F] to-[#DD2476] text-white font-black px-6 py-3 rounded-2xl hover:scale-105 transition-transform shadow"
+              >
+                📩 לפנייה נוספת — לחצו כאן
+              </button>
             </div>
           ) : (
             <>
-              <input
-                type="text"
-                placeholder="השם שלך (אופציונלי)"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                disabled={status === 'loading'}
-                className="rounded-2xl px-4 py-3 border-2 border-[#DD2476]/30 bg-white text-gray-800 font-bold placeholder-gray-400 focus:outline-none focus:border-[#DD2476] disabled:opacity-50"
-              />
+              <input type="text" placeholder="השם שלך (אופציונלי)" value={name}
+                onChange={e => setName(e.target.value)} disabled={status === 'loading'}
+                className="rounded-2xl px-4 py-3 border-2 border-[#DD2476]/30 bg-white text-gray-800 font-bold placeholder-gray-400 focus:outline-none focus:border-[#DD2476] disabled:opacity-50" />
 
-              <input
-                type="email"
-                placeholder="המייל שלך *"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                disabled={status === 'loading'}
-                className="rounded-2xl px-4 py-3 border-2 border-[#DD2476]/30 bg-white text-gray-800 font-bold placeholder-gray-400 focus:outline-none focus:border-[#DD2476] disabled:opacity-50"
-              />
+              <input type="email" placeholder="המייל שלך *" value={email}
+                onChange={e => setEmail(e.target.value)} disabled={status === 'loading'}
+                className="rounded-2xl px-4 py-3 border-2 border-[#DD2476]/30 bg-white text-gray-800 font-bold placeholder-gray-400 focus:outline-none focus:border-[#DD2476] disabled:opacity-50" />
 
-              <textarea
-                placeholder="מה תרצו לכתוב? חסר שיר? יש הערה? *"
-                value={message}
-                onChange={e => setMessage(e.target.value)}
-                disabled={status === 'loading'}
-                rows={4}
-                className="rounded-2xl px-4 py-3 border-2 border-[#DD2476]/30 bg-white text-gray-800 font-bold placeholder-gray-400 focus:outline-none focus:border-[#DD2476] resize-none disabled:opacity-50"
-              />
+              <textarea placeholder="מה תרצו לכתוב? *" value={message}
+                onChange={e => setMessage(e.target.value)} disabled={status === 'loading'} rows={4}
+                className="rounded-2xl px-4 py-3 border-2 border-[#DD2476]/30 bg-white text-gray-800 font-bold placeholder-gray-400 focus:outline-none focus:border-[#DD2476] resize-none disabled:opacity-50" />
 
-              {errorMsg && (
-                <p className="text-red-500 font-bold text-center">⚠️ {errorMsg}</p>
-              )}
+              {errorMsg && <p className="text-red-500 font-bold text-center">⚠️ {errorMsg}</p>}
 
-              <button
-                onClick={handleSend}
-                disabled={status === 'loading'}
-                className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] text-white font-black text-lg px-8 py-4 rounded-2xl text-center hover:scale-105 transition-transform shadow-lg disabled:opacity-60 disabled:scale-100"
-              >
-                {status === 'loading' ? '⏳ שולח...' : ' שליחה📩'}
+              <button onClick={handleSend} disabled={status === 'loading'}
+                className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] text-white font-black text-lg px-8 py-4 rounded-2xl hover:scale-105 transition-transform shadow-lg disabled:opacity-60 disabled:scale-100">
+                {status === 'loading' ? '⏳ שולח...' : '📩 שלחו הודעה'}
               </button>
             </>
           )}
         </div>
-
       </div>
 
       <footer className="bg-[#ffe8cc] text-center py-6 mt-8">

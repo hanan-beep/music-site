@@ -11,7 +11,6 @@ export default function HamburgerMenu() {
     { href: '/songs',   icon: '🎵', label: 'שירים' },
   ];
 
-
   return (
     <>
       <button
@@ -27,51 +26,35 @@ export default function HamburgerMenu() {
       </button>
 
       {open && (
-        <div
-          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
-          onClick={() => setOpen(false)}
-        />
+        <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" onClick={() => setOpen(false)} />
       )}
 
       <aside
-        className={`fixed top-0 left-0 h-full w-72 z-50 bg-gradient-to-b from-[#FF512F] to-[#DD2476] shadow-2xl transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 left-0 h-full w-72 z-50 bg-gradient-to-b from-[#FF512F] to-[#DD2476] shadow-2xl transition-transform duration-300 ease-in-out flex flex-col ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
         dir="rtl"
       >
+        {/* כותרת */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-white/20">
           <h2 className="text-white font-black text-xl">יאללה שירים 💪</h2>
-          <button
-            onClick={() => setOpen(false)}
-            className="text-white text-2xl hover:opacity-70 transition-opacity"
-            aria-label="סגור תפריט"
-          >
-            ✕
-          </button>
+          <button onClick={() => setOpen(false)} className="text-white text-2xl hover:opacity-70 transition-opacity">✕</button>
         </div>
 
-        <nav className="flex flex-col p-6 gap-2">
+        {/* ניווט */}
+        <nav className="flex flex-col p-6 gap-2 flex-1">
           {links.map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-4 px-4 py-3 rounded-2xl text-white font-bold text-lg hover:bg-white/20 transition-colors"
-            >
+            <a key={item.href} href={item.href} onClick={() => setOpen(false)}
+              className="flex items-center gap-4 px-4 py-3 rounded-2xl text-white font-bold text-lg hover:bg-white/20 transition-colors">
               <span className="text-2xl">{item.icon}</span>
               {item.label}
             </a>
           ))}
 
-          {/* קו הפרדה */}
           <div className="border-t border-white/20 my-2" />
 
-          {/* צור קשר */}
-          <a
-            href='/contact'
-            onClick={() => setOpen(false)}
-            className="flex items-center gap-4 px-4 py-3 rounded-2xl text-white font-bold text-lg hover:bg-white/20 transition-colors"
-          >
+          <a href="/contact" onClick={() => setOpen(false)}
+            className="flex items-center gap-4 px-4 py-3 rounded-2xl text-white font-bold text-lg hover:bg-white/20 transition-colors">
             <span className="text-2xl">✉️</span>
             <div>
               <div>צור קשר</div>
@@ -80,8 +63,10 @@ export default function HamburgerMenu() {
           </a>
         </nav>
 
-        <div className="absolute bottom-6 right-6 left-6 text-center text-white/60 text-sm">
-          ✨ ♩ ♪ ♫ ♬ ♫ ♪ ♩ ✨
+        {/* זכויות בתחתית */}
+        <div className="px-6 py-5 border-t border-white/20 text-center">
+          <p className="text-white/70 text-xs">✨ ♩ ♪ ♫ ♬ יאללה שירים ♬ ♫ ♪ ♩ ✨</p>
+          <p className="text-white/40 text-xs mt-1">© כל הזכויות שמורות | By Yael</p>
         </div>
       </aside>
     </>

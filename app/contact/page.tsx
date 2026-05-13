@@ -60,7 +60,7 @@ export default function Contact() {
         </div>
 
         <div className="bg-white/70 rounded-3xl p-8 shadow-lg flex flex-col gap-4">
-          {status !== 'success' <h3 className="text-xl font-black text-[#DD2476] text-center">📬 שלחו הודעה</h3><h3 className="text-xl font-black text-[#DD2476] text-center">📬 שלחו הודעה</h3> <h3 className="text-xl font-black text-[#DD2476] text-center">📬 שלחו הודעה</h3>}
+          <h3 className="text-xl font-black text-[#DD2476] text-center">📬 שלחו הודעה</h3>
 
           {status === 'success' ? (
             <div className="text-center py-6 flex flex-col gap-4">
@@ -71,7 +71,7 @@ export default function Contact() {
                 onClick={resetForm}
                 className="mt-2 bg-gradient-to-r from-[#FF512F] to-[#DD2476] text-white font-black px-6 py-3 rounded-2xl hover:scale-105 transition-transform shadow"
               >
-                📩 לפנייה נוספת — לחצו כאן
+                📩 לפנייה נוספת - לחצו כאן
               </button>
             </div>
           ) : (

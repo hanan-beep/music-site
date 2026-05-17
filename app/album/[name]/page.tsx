@@ -17,30 +17,16 @@ export default async function AlbumPage({ params, searchParams }: any) {
   const albumName = (await searchParams).name || folderId;
   const contents = await getFolderContents(folderId);
 
-  const folders = contents.filter(
-    (f: any) => f.mimeType === 'application/vnd.google-apps.folder'
+  const folders = contents.filter((f: any) => f.mimeType === 'application/vnd.google-apps.folder');
+  const songs = contents.filter((f: any) =>
+    f.mimeType !== 'application/vnd.google-apps.folder' && !IMAGE_MIME.includes(f.mimeType)
   );
-  const songs = contents.filter(
-    (f: any) => f.mimeType !== 'application/vnd.google-apps.folder'
-      && !IMAGE_MIME.includes(f.mimeType)
-  );
-  // תמונת אלבום — הקובץ הראשון שהוא תמונה
   const albumImage = contents.find((f: any) => IMAGE_MIME.includes(f.mimeType)) || null;
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#ffecd2] via-[#fcb69f] to-[#ffd1a9] pb-32" dir="rtl">
+    <main className="min-h-screen bg-gradient-to-br from-[#ffecd2] via-[#fcb69f] to-[#ffd1a9] pb-48" dir="rtl">
       <header className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] p-6 text-center shadow-2xl">
         <BackButton />
-        {/* תמונת אלבום קטנה בכותרת */}
-        {albumImage && (
-          <div className="flex justify-center mb-3">
-            <img
-              src={`https://drive.google.com/thumbnail?id=${albumImage.id}&sz=w120`}
-              alt={albumName}
-              className="w-20 h-20 object-cover rounded-2xl shadow-lg border-2 border-white/50"
-            />
-          </div>
-        )}
         <h1 className="text-3xl font-black text-white">💿 {albumName}</h1>
       </header>
 

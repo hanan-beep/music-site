@@ -1,6 +1,6 @@
 // app/PlayerContext.tsx
 'use client';
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 
 type Song = { id: string; name: string; artistName?: string; albumName?: string };
 
@@ -13,10 +13,33 @@ type PlayerCtx = {
 };
 
 const Ctx = createContext<PlayerCtx | null>(null);
+const LS_KEY = 'yallah_player';
 
 export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const [songs, setSongs] = useState<Song[]>([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
+
+  // טעינה מ-localStorage בטעינה ראשונה
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(LS_KEY);
+      if (saved) {
+        const { songs: s, currentIndex: i } = JSON.parse(saved);
+        if (s && i >= 0) { setSongs(s); setCurrentIndex(i); }
+      }
+    } catch {}
+  }, []);
+
+  // שמירה ל-localStorage בכל שינוי
+  useEffect(() => {
+    try {
+      if (currentIndex >= 0 && songs.length > 0) {
+        localStorage.setItem(LS_KEY, JSON.stringify({ songs, currentIndex }));
+      } else {
+        localStorage.removeItem(LS_KEY);
+      }
+    } catch {}
+  }, [songs, currentIndex]);
 
   const play = useCallback((newSongs: Song[], index: number) => {
     setSongs(newSongs);
@@ -24,10 +47,16 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const playIndex = useCallback((index: number) => {
-    if (index >= 0 && index < songs.length) setCurrentIndex(index);
-  }, [songs]);
+    setCurrentIndex(prev => {
+      if (index >= 0 && index < songs.length) return index;
+      return prev;
+    });
+  }, [songs.length]);
 
-  const close = useCallback(() => setCurrentIndex(-1), []);
+  const close = useCallback(() => {
+    setCurrentIndex(-1);
+    localStorage.removeItem(LS_KEY);
+  }, []);
 
   return (
     <Ctx.Provider value={{ songs, currentIndex, play, playIndex, close }}>

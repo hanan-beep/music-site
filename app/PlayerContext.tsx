@@ -1,9 +1,8 @@
 // app/PlayerContext.tsx
 'use client';
-import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 
 type Song = { id: string; name: string; artistName?: string; albumName?: string };
-
 type PlayerCtx = {
   songs: Song[];
   currentIndex: number;
@@ -13,28 +12,35 @@ type PlayerCtx = {
 };
 
 const Ctx = createContext<PlayerCtx | null>(null);
-const LS_KEY = 'yallah_player';
+const LS_KEY = 'yallah_player_v2';
 
 export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const [songs, setSongs] = useState<Song[]>([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
+  const initialized = useRef(false);
 
-  // טעינה מ-localStorage בטעינה ראשונה
+  // טעינה מ-localStorage רק בצד הלקוח
   useEffect(() => {
+    if (initialized.current) return;
+    initialized.current = true;
     try {
       const saved = localStorage.getItem(LS_KEY);
       if (saved) {
-        const { songs: s, currentIndex: i } = JSON.parse(saved);
-        if (s && i >= 0) { setSongs(s); setCurrentIndex(i); }
+        const { s, i } = JSON.parse(saved);
+        if (Array.isArray(s) && s.length > 0 && typeof i === 'number' && i >= 0) {
+          setSongs(s);
+          setCurrentIndex(i);
+        }
       }
     } catch {}
   }, []);
 
-  // שמירה ל-localStorage בכל שינוי
+  // שמירה ל-localStorage
   useEffect(() => {
+    if (!initialized.current) return;
     try {
       if (currentIndex >= 0 && songs.length > 0) {
-        localStorage.setItem(LS_KEY, JSON.stringify({ songs, currentIndex }));
+        localStorage.setItem(LS_KEY, JSON.stringify({ s: songs, i: currentIndex }));
       } else {
         localStorage.removeItem(LS_KEY);
       }
@@ -47,15 +53,15 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const playIndex = useCallback((index: number) => {
-    setCurrentIndex(prev => {
-      if (index >= 0 && index < songs.length) return index;
+    setSongs(prev => {
+      if (index >= 0 && index < prev.length) setCurrentIndex(index);
       return prev;
     });
-  }, [songs.length]);
+  }, []);
 
   const close = useCallback(() => {
     setCurrentIndex(-1);
-    localStorage.removeItem(LS_KEY);
+    try { localStorage.removeItem(LS_KEY); } catch {}
   }, []);
 
   return (

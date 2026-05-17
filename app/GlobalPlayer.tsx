@@ -4,14 +4,14 @@ import { usePlayer } from './PlayerContext';
 
 export default function GlobalPlayer() {
   const { songs, currentIndex, playIndex, close } = usePlayer();
-  const current = currentIndex >= 0 ? songs[currentIndex] : null;
+  const current = currentIndex >= 0 && songs.length > 0 ? songs[currentIndex] : null;
   if (!current) return null;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 w-full shadow-2xl" style={{ zIndex: 200 }}>
       <div className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] px-4 py-3 flex items-center gap-3 w-full">
         <button onClick={() => playIndex(currentIndex - 1)} disabled={currentIndex <= 0}
-          className="flex-shrink-0 flex items-center gap-1 bg-white/20 hover:bg-white/30 disabled:opacity-30 text-white font-black px-3 py-2 rounded-xl text-sm">
+          className="flex-shrink-0 flex items-center gap-1 bg-white/20 hover:bg-white/30 disabled:opacity-30 text-white font-black px-3 py-2 rounded-xl text-sm transition-colors">
           ⏮ <span className="hidden sm:inline">קודם</span>
         </button>
 
@@ -23,7 +23,7 @@ export default function GlobalPlayer() {
         </div>
 
         <button onClick={() => playIndex(currentIndex + 1)} disabled={currentIndex >= songs.length - 1}
-          className="flex-shrink-0 flex items-center gap-1 bg-white text-[#DD2476] font-black px-3 py-2 rounded-xl hover:bg-pink-50 disabled:opacity-30 shadow text-sm">
+          className="flex-shrink-0 flex items-center gap-1 bg-white text-[#DD2476] font-black px-3 py-2 rounded-xl hover:bg-pink-50 disabled:opacity-30 shadow text-sm transition-colors">
           <span className="hidden sm:inline">הבא</span> ⏭
         </button>
 

@@ -12,9 +12,7 @@ export default function AlbumsClient({ albums }: { albums: any[] }) {
       a.artistName.toLowerCase().includes(search.toLowerCase())
     );
     return [...list].sort((a, b) =>
-      sort === 'alpha-asc'
-        ? a.name.localeCompare(b.name, 'he')
-        : b.name.localeCompare(a.name, 'he')
+      sort === 'alpha-asc' ? a.name.localeCompare(b.name, 'he') : b.name.localeCompare(a.name, 'he')
     );
   }, [albums, search, sort]);
 
@@ -26,18 +24,11 @@ export default function AlbumsClient({ albums }: { albums: any[] }) {
       </header>
 
       <div className="px-6 pt-6 pb-2 flex flex-col sm:flex-row gap-3">
-        <input
-          type="text"
-          placeholder="🔍 חיפוש אלבום או זמר..."
-          value={search}
+        <input type="text" placeholder="🔍 חיפוש אלבום או זמר..." value={search}
           onChange={e => setSearch(e.target.value)}
-          className="flex-1 rounded-2xl px-4 py-3 border-2 border-[#DD2476]/30 bg-white/80 text-gray-800 font-bold placeholder-gray-400 focus:outline-none focus:border-[#DD2476] shadow"
-        />
-        <select
-          value={sort}
-          onChange={e => setSort(e.target.value as any)}
-          className="rounded-2xl px-4 py-3 border-2 border-[#DD2476]/30 bg-white/80 text-gray-800 font-bold focus:outline-none focus:border-[#DD2476] shadow"
-        >
+          className="flex-1 rounded-2xl px-4 py-3 border-2 border-[#DD2476]/30 bg-white/80 text-gray-800 font-bold placeholder-gray-400 focus:outline-none focus:border-[#DD2476] shadow" />
+        <select value={sort} onChange={e => setSort(e.target.value as any)}
+          className="rounded-2xl px-4 py-3 border-2 border-[#DD2476]/30 bg-white/80 text-gray-800 font-bold focus:outline-none focus:border-[#DD2476] shadow">
           <option value="alpha-asc">א ← ת</option>
           <option value="alpha-desc">ת ← א</option>
         </select>

@@ -1,4 +1,4 @@
-// app/artists/ArtistsClient.tsx — CLIENT COMPONENT (חיפוש + מיון)
+// app/artists/ArtistsClient.tsx
 'use client';
 import { useState, useMemo } from 'react';
 
@@ -7,13 +7,9 @@ export default function ArtistsClient({ artists }: { artists: any[] }) {
   const [sort, setSort] = useState<'alpha-asc' | 'alpha-desc'>('alpha-asc');
 
   const filtered = useMemo(() => {
-    let list = artists.filter(a =>
-      a.name.toLowerCase().includes(search.toLowerCase())
-    );
+    let list = artists.filter(a => a.name.toLowerCase().includes(search.toLowerCase()));
     return [...list].sort((a, b) =>
-      sort === 'alpha-asc'
-        ? a.name.localeCompare(b.name, 'he')
-        : b.name.localeCompare(a.name, 'he')
+      sort === 'alpha-asc' ? a.name.localeCompare(b.name, 'he') : b.name.localeCompare(a.name, 'he')
     );
   }, [artists, search, sort]);
 
@@ -25,18 +21,11 @@ export default function ArtistsClient({ artists }: { artists: any[] }) {
       </header>
 
       <div className="px-6 pt-6 pb-2 flex flex-col sm:flex-row gap-3">
-        <input
-          type="text"
-          placeholder="🔍 חיפוש זמר..."
-          value={search}
+        <input type="text" placeholder="🔍 חיפוש זמר..." value={search}
           onChange={e => setSearch(e.target.value)}
-          className="flex-1 rounded-2xl px-4 py-3 border-2 border-[#DD2476]/30 bg-white/80 text-gray-800 font-bold placeholder-gray-400 focus:outline-none focus:border-[#DD2476] shadow"
-        />
-        <select
-          value={sort}
-          onChange={e => setSort(e.target.value as any)}
-          className="rounded-2xl px-4 py-3 border-2 border-[#DD2476]/30 bg-white/80 text-gray-800 font-bold focus:outline-none focus:border-[#DD2476] shadow"
-        >
+          className="flex-1 rounded-2xl px-4 py-3 border-2 border-[#DD2476]/30 bg-white/80 text-gray-800 font-bold placeholder-gray-400 focus:outline-none focus:border-[#DD2476] shadow" />
+        <select value={sort} onChange={e => setSort(e.target.value as any)}
+          className="rounded-2xl px-4 py-3 border-2 border-[#DD2476]/30 bg-white/80 text-gray-800 font-bold focus:outline-none focus:border-[#DD2476] shadow">
           <option value="alpha-asc">א ← ת</option>
           <option value="alpha-desc">ת ← א</option>
         </select>
@@ -44,8 +33,7 @@ export default function ArtistsClient({ artists }: { artists: any[] }) {
 
       <section className="grid grid-cols-2 md:grid-cols-4 gap-6 p-6">
         {filtered.map((artist: any) => (
-          <a key={artist.id}
-            href={`/artist/${encodeURIComponent(artist.name)}`}
+          <a key={artist.id} href={`/artist/${encodeURIComponent(artist.name)}`}
             className="bg-[#ffe8cc] rounded-3xl p-6 text-center hover:scale-105 transition-transform cursor-pointer shadow-md block">
             <div className="text-5xl mb-3">🎤</div>
             <h3 className="font-bold text-lg text-[#DD2476]">{artist.name}</h3>

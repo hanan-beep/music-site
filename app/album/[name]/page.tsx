@@ -1,4 +1,5 @@
 // app/album/[name]/page.tsx
+import Link from 'next/link';
 import Player from './Player';
 import BackButton from '@/app/BackButton';
 
@@ -36,12 +37,12 @@ export default async function AlbumPage({ params, searchParams }: any) {
             <h2 className="text-2xl font-black text-[#DD2476] mb-4">📁 תיקיות</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {folders.map((folder: any) => (
-                <a key={folder.id}
+                <Link key={folder.id}
                   href={`/album/${folder.id}?name=${encodeURIComponent(folder.name)}`}
                   className="bg-[#ffe8cc] rounded-2xl p-4 text-center hover:scale-105 transition-transform shadow-md block">
                   <div className="text-4xl mb-2">📁</div>
                   <h3 className="font-bold text-[#DD2476]">{folder.name}</h3>
-                </a>
+                </Link>
               ))}
             </div>
           </section>

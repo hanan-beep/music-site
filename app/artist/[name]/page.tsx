@@ -1,4 +1,5 @@
 // app/artist/[name]/page.tsx
+import Link from 'next/link';
 import Player from '@/app/album/[name]/Player';
 import BackButton from '@/app/BackButton';
 
@@ -27,12 +28,8 @@ export default async function ArtistPage({ params }: any) {
   }
 
   const contents = await getFolderContents(artist.id);
-  const folders = contents.filter(
-    (f: any) => f.mimeType === 'application/vnd.google-apps.folder'
-  );
-  const songs = contents.filter(
-    (f: any) => f.mimeType !== 'application/vnd.google-apps.folder'
-  );
+  const folders = contents.filter((f: any) => f.mimeType === 'application/vnd.google-apps.folder');
+  const songs = contents.filter((f: any) => f.mimeType !== 'application/vnd.google-apps.folder');
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#ffecd2] via-[#fcb69f] to-[#ffd1a9]" dir="rtl">
@@ -41,29 +38,25 @@ export default async function ArtistPage({ params }: any) {
         <h1 className="text-3xl font-black text-white">🎤 {artistName}</h1>
       </header>
 
-      <div className="p-8 pb-32">
+      <div className="p-8 pb-48">
         {folders.length > 0 && (
           <section className="mb-10">
-            {/* כותרת + כפתור הורדה בצד */}
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-black text-[#DD2476]">💿 אלבומים</h2>
-              <a
-                href={`https://drive.google.com/drive/folders/${artist.id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-white border-2 border-[#DD2476] text-[#DD2476] font-bold text-sm px-4 py-2 rounded-2xl hover:bg-[#DD2476] hover:text-white transition-colors shadow"
-              >
+              <a href={`https://drive.google.com/drive/folders/${artist.id}`}
+                target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-white border-2 border-[#DD2476] text-[#DD2476] font-bold text-sm px-4 py-2 rounded-2xl hover:bg-[#DD2476] hover:text-white transition-colors shadow">
                 📁 הורד הכל מדרייב
               </a>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {folders.map((folder: any) => (
-                <a key={folder.id}
+                <Link key={folder.id}
                   href={`/album/${folder.id}?name=${encodeURIComponent(folder.name)}`}
                   className="bg-[#ffe8cc] rounded-2xl p-4 text-center hover:scale-105 transition-transform shadow-md block">
                   <div className="text-4xl mb-2">💿</div>
                   <h3 className="font-bold text-[#DD2476]">{folder.name}</h3>
-                </a>
+                </Link>
               ))}
             </div>
           </section>

@@ -1,13 +1,13 @@
 // app/songs/SongsClient.tsx
 'use client';
 import { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { usePlayer } from '@/app/PlayerContext';
 
 type Song = { id: string; name: string; artistName: string; albumName: string; isNew: boolean; driveOrder: number; createdTime?: string; };
 
 function isWithinDays(dateStr: string, days: number) {
-  const d = new Date(dateStr);
-  return (Date.now() - d.getTime()) < days * 86400000;
+  return (Date.now() - new Date(dateStr).getTime()) < days * 86400000;
 }
 function isSameDay(dateStr: string, target: Date) {
   const d = new Date(dateStr);
@@ -17,12 +17,12 @@ function isSameDay(dateStr: string, target: Date) {
 type SortMode = 'newest' | 'week' | 'month' | 'date' | 'alpha-asc' | 'alpha-desc';
 
 const SORT_OPTIONS: { value: SortMode; label: string; icon: string }[] = [
-  { value: 'newest',    label: 'חדשים קודם',    icon: '🔥' },
-  { value: 'week',      label: 'שבוע אחרון',    icon: '⚡' },
-  { value: 'month',     label: 'חודש אחרון',    icon: '🌙' },
-  { value: 'date',      label: 'תאריך ספציפי',  icon: '🗓' },
-  { value: 'alpha-asc', label: 'א → ת',         icon: '🔤' },
-  { value: 'alpha-desc',label: 'ת → א',         icon: '🔡' },
+  { value: 'newest',    label: 'חדשים קודם',   icon: '🔥' },
+  { value: 'week',      label: 'שבוע אחרון',   icon: '⚡' },
+  { value: 'month',     label: 'חודש אחרון',   icon: '🌙' },
+  { value: 'date',      label: 'תאריך ספציפי', icon: '🗓' },
+  { value: 'alpha-asc', label: 'א → ת',        icon: '🔤' },
+  { value: 'alpha-desc',label: 'ת → א',        icon: '🔡' },
 ];
 
 export default function SongsClient({ regularSongs, extraSongs }: { regularSongs: Song[]; extraSongs: Song[]; }) {
@@ -42,8 +42,7 @@ export default function SongsClient({ regularSongs, extraSongs }: { regularSongs
       return arr.filter(s => {
         const key = s.name.replace(/\.[^/.]+$/, '').trim().toLowerCase();
         if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
+        seen.add(key); return true;
       });
     };
 
@@ -54,12 +53,8 @@ export default function SongsClient({ regularSongs, extraSongs }: { regularSongs
         .sort((a, b) => a.name.replace(/\.[^/.]+$/, '').localeCompare(b.name.replace(/\.[^/.]+$/, ''), 'he'));
       return [...newF, ...regF];
     }
-    if (sort === 'week')
-      return dedup(extraSongs.filter(match).filter(s => s.createdTime && isWithinDays(s.createdTime, 7)))
-        .sort((a, b) => new Date(b.createdTime!).getTime() - new Date(a.createdTime!).getTime());
-    if (sort === 'month')
-      return dedup(extraSongs.filter(match).filter(s => s.createdTime && isWithinDays(s.createdTime, 30)))
-        .sort((a, b) => new Date(b.createdTime!).getTime() - new Date(a.createdTime!).getTime());
+    if (sort === 'week') return dedup(extraSongs.filter(match).filter(s => s.createdTime && isWithinDays(s.createdTime, 7))).sort((a, b) => new Date(b.createdTime!).getTime() - new Date(a.createdTime!).getTime());
+    if (sort === 'month') return dedup(extraSongs.filter(match).filter(s => s.createdTime && isWithinDays(s.createdTime, 30))).sort((a, b) => new Date(b.createdTime!).getTime() - new Date(a.createdTime!).getTime());
     if (sort === 'date' && selectedDate) {
       const target = new Date(selectedDate);
       return dedup(extraSongs.filter(match).filter(s => s.createdTime && isSameDay(s.createdTime, target)));
@@ -72,40 +67,33 @@ export default function SongsClient({ regularSongs, extraSongs }: { regularSongs
 
   const isThisPlaylist = globalSongs.length > 0 && filtered.length > 0 && globalSongs[0]?.id === filtered[0]?.id;
   const activeIndex = isThisPlaylist ? currentIndex : -1;
-  const currentSort = SORT_OPTIONS.find(o => o.value === sort)!;
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#ffecd2] via-[#fcb69f] to-[#ffd1a9] pb-48" dir="rtl">
       <header className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] p-6 text-center shadow-2xl">
-        <a href="/" className="text-white text-sm mb-2 block">→ חזרה לדף הבית</a>
+        <Link href="/" className="text-white text-sm mb-2 block">→ חזרה לדף הבית</Link>
         <h1 className="text-3xl font-black text-white">🎵 שירים</h1>
       </header>
 
-      {/* חיפוש */}
       <div className="px-6 pt-6 pb-3">
         <input type="text" placeholder="🔍 חיפוש שיר או זמר..." value={search}
           onChange={e => setSearch(e.target.value)}
           className="w-full rounded-2xl px-4 py-3 border-2 border-[#DD2476]/30 bg-white/80 text-gray-800 font-bold placeholder-gray-400 focus:outline-none focus:border-[#DD2476] shadow" />
       </div>
 
-      {/* כפתורי מיון */}
       <div className="px-6 pb-4">
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+        <div className="flex gap-2 overflow-x-auto pb-1">
           {SORT_OPTIONS.map(opt => (
-            <button key={opt.value}
-              onClick={() => setSort(opt.value)}
+            <button key={opt.value} onClick={() => setSort(opt.value)}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-2xl font-bold text-sm whitespace-nowrap transition-all flex-shrink-0 ${
                 sort === opt.value
                   ? 'bg-gradient-to-r from-[#FF512F] to-[#DD2476] text-white shadow-lg scale-105'
                   : 'bg-white/80 text-gray-600 border-2 border-gray-200 hover:border-[#DD2476]'
               }`}>
-              <span>{opt.icon}</span>
-              <span>{opt.label}</span>
+              <span>{opt.icon}</span><span>{opt.label}</span>
             </button>
           ))}
         </div>
-
-        {/* לוח שנה */}
         {sort === 'date' && (
           <div className="mt-3">
             <input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)}
@@ -125,13 +113,9 @@ export default function SongsClient({ regularSongs, extraSongs }: { regularSongs
                   ? 'bg-gradient-to-l from-[#FF512F]/20 to-[#DD2476]/20 border-2 border-[#DD2476] scale-[1.01]'
                   : 'bg-[#ffe8cc] hover:bg-[#ffd9aa] border-2 border-transparent'
               }`}>
-
-              {/* תמונה / לוגו */}
               <div className={`w-11 h-11 rounded-xl flex-shrink-0 overflow-hidden border-2 shadow ${isActive ? 'border-[#DD2476]' : 'border-white'}`}>
                 <img src="/logo.png" alt="" className="w-full h-full object-cover" />
               </div>
-
-              {/* מידע */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   {song.isNew && <span className="text-xs bg-[#DD2476] text-white px-2 py-0.5 rounded-full font-black flex-shrink-0">חדש</span>}
@@ -139,17 +123,11 @@ export default function SongsClient({ regularSongs, extraSongs }: { regularSongs
                     {song.name.replace(/\.[^/.]+$/, '')}
                   </h3>
                 </div>
-                {song.artistName && (
-                  <p className="text-xs text-gray-500 truncate mt-0.5">🎤 {song.artistName}</p>
-                )}
+                {song.artistName && <p className="text-xs text-gray-500 truncate mt-0.5">🎤 {song.artistName}</p>}
               </div>
-
-              {/* כפתורים */}
               <div className="flex items-center gap-2 flex-shrink-0" onClick={e => e.stopPropagation()}>
                 <button onClick={() => play(filtered, idx)}
-                  className={`flex items-center gap-1 px-3 py-2 rounded-xl text-sm font-black transition-all ${
-                    isActive ? 'bg-[#DD2476] text-white shadow' : 'bg-[#DD2476] text-white hover:opacity-80'
-                  }`}>
+                  className={`flex items-center gap-1 px-3 py-2 rounded-xl text-sm font-black transition-all ${isActive ? 'bg-[#DD2476] text-white shadow' : 'bg-[#DD2476] text-white hover:opacity-80'}`}>
                   {isActive ? '🎵' : '▶'} <span className="hidden sm:inline">{isActive ? 'מנגן' : 'האזן'}</span>
                 </button>
                 <a href={`https://drive.google.com/uc?export=download&id=${song.id}`}

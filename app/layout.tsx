@@ -5,6 +5,7 @@ import "./globals.css";
 import HamburgerMenu from "./HamburgerMenu";
 import { PlayerProvider } from "./PlayerContext";
 import { HistoryProvider } from "./HistoryContext";
+import { FavoritesProvider } from "./FavoritesContext";
 import GlobalPlayer from "./GlobalPlayer";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -21,9 +22,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-full flex flex-col">
         <PlayerProvider>
           <HistoryProvider>
-            <HamburgerMenu />
-            {children}
-            <GlobalPlayer />
+            <FavoritesProvider>
+              <HamburgerMenu />
+              {children}
+              <GlobalPlayer />
+            </FavoritesProvider>
           </HistoryProvider>
         </PlayerProvider>
       </body>

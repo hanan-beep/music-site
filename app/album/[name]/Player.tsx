@@ -1,12 +1,10 @@
 // app/album/[name]/Player.tsx
 'use client';
-import Link from 'next/link';
 import { usePlayer } from '@/app/PlayerContext';
+import FavButton from '@/app/FavButton';
 
 export default function Player({
-  songs,
-  folderId,
-  albumImage,
+  songs, folderId, albumImage,
 }: {
   songs: any[];
   folderId?: string;
@@ -41,7 +39,7 @@ export default function Player({
           const isActive = activeIndex === idx;
           return (
             <div key={song.id} onClick={() => play(songs, idx)}
-              className={`rounded-2xl p-4 flex items-center justify-between shadow-md gap-3 cursor-pointer transition-all duration-200 ${
+              className={`rounded-2xl p-4 flex items-center gap-3 shadow-md cursor-pointer transition-all duration-200 ${
                 isActive
                   ? 'bg-gradient-to-l from-[#FF512F]/20 to-[#DD2476]/20 border-2 border-[#DD2476] scale-[1.01]'
                   : 'bg-[#ffe8cc] hover:bg-[#ffd9aa] border-2 border-transparent'
@@ -56,7 +54,8 @@ export default function Player({
                   {song.name.replace(/\.[^/.]+$/, '')}
                 </h3>
               </div>
-              <div className="flex gap-2 flex-shrink-0" onClick={e => e.stopPropagation()}>
+              <div className="flex items-center gap-2 flex-shrink-0" onClick={e => e.stopPropagation()}>
+                <FavButton song={song} />
                 <button onClick={() => play(songs, idx)}
                   className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
                     isActive ? 'bg-[#DD2476] text-white' : 'bg-[#DD2476]/80 text-white hover:bg-[#DD2476]'
@@ -64,7 +63,6 @@ export default function Player({
                   {isActive ? '🎵 מנגן' : '▶️ האזן'}
                 </button>
                 <a href={`https://drive.google.com/uc?export=download&id=${song.id}`}
-                  onClick={e => e.stopPropagation()}
                   className="bg-[#FF512F] text-white px-4 py-2 rounded-full text-sm font-bold hover:opacity-80">
                   ⬇️ הורד
                 </a>

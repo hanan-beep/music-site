@@ -7,11 +7,12 @@ export default function HamburgerMenu() {
   const [open, setOpen] = useState(false);
 
   const links = [
-    { href: '/',         icon: '🏠', label: 'דף הבית' },
-    { href: '/artists',  icon: '🎤', label: 'זמרים' },
-    { href: '/albums',   icon: '💿', label: 'אלבומים' },
-    { href: '/songs',    icon: '🎵', label: 'שירים' },
-    { href: '/history',  icon: '🎧', label: 'היסטוריית האזנה' },
+    { href: '/',          icon: '🏠', label: 'דף הבית' },
+    { href: '/artists',   icon: '🎤', label: 'זמרים' },
+    { href: '/albums',    icon: '💿', label: 'אלבומים' },
+    { href: '/songs',     icon: '🎵', label: 'שירים' },
+    { href: '/favorites', icon: '❤️', label: 'מועדפים' },
+    { href: '/history',   icon: '🎧', label: 'היסטוריית האזנה' },
   ];
 
   return (
@@ -33,7 +34,7 @@ export default function HamburgerMenu() {
           <button onClick={() => setOpen(false)} className="text-white text-2xl hover:opacity-70">✕</button>
         </div>
 
-        <nav className="flex flex-col p-6 gap-2 flex-1">
+        <nav className="flex flex-col p-6 gap-2 flex-1 overflow-y-auto">
           {links.map((item) => (
             <Link key={item.href} href={item.href} onClick={() => setOpen(false)}
               className="flex items-center gap-4 px-4 py-3 rounded-2xl text-white font-bold text-lg hover:bg-white/20 transition-colors">

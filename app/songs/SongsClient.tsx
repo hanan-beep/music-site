@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { usePlayer } from '@/app/PlayerContext';
+import FavButton from '@/app/FavButton';
 
 type Song = { id: string; name: string; artistName: string; albumName: string; isNew: boolean; driveOrder: number; createdTime?: string; };
 
@@ -21,8 +22,8 @@ const SORT_OPTIONS: { value: SortMode; label: string; icon: string }[] = [
   { value: 'week',      label: 'שבוע אחרון',   icon: '⚡' },
   { value: 'month',     label: 'חודש אחרון',   icon: '🌙' },
   { value: 'date',      label: 'תאריך ספציפי', icon: '🗓' },
-  { value: 'alpha-asc', label: 'א ← ת',        icon: '🔤' },
-  { value: 'alpha-desc',label: 'ת ← א',        icon: '🔡' },
+  { value: 'alpha-asc', label: 'א → ת',        icon: '🔤' },
+  { value: 'alpha-desc',label: 'ת → א',        icon: '🔡' },
 ];
 
 export default function SongsClient({ regularSongs, extraSongs }: { regularSongs: Song[]; extraSongs: Song[]; }) {
@@ -119,6 +120,7 @@ export default function SongsClient({ regularSongs, extraSongs }: { regularSongs
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   {song.isNew && <span className="text-xs bg-[#DD2476] text-white px-2 py-0.5 rounded-full font-black flex-shrink-0">חדש</span>}
+                <FavButton song={song} size="sm" />
                   <h3 className={`font-bold truncate text-sm ${isActive ? 'text-[#DD2476]' : 'text-gray-800'}`}>
                     {song.name.replace(/\.[^/.]+$/, '')}
                   </h3>

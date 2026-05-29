@@ -7,10 +7,11 @@ export default function HamburgerMenu() {
   const [open, setOpen] = useState(false);
 
   const links = [
-    { href: '/',        icon: '🏠', label: 'דף הבית' },
-    { href: '/artists', icon: '🎤', label: 'זמרים' },
-    { href: '/albums',  icon: '💿', label: 'אלבומים' },
-    { href: '/songs',   icon: '🎵', label: 'שירים' },
+    { href: '/',         icon: '🏠', label: 'דף הבית' },
+    { href: '/artists',  icon: '🎤', label: 'זמרים' },
+    { href: '/albums',   icon: '💿', label: 'אלבומים' },
+    { href: '/songs',    icon: '🎵', label: 'שירים' },
+    { href: '/history',  icon: '🎧', label: 'היסטוריית האזנה' },
   ];
 
   return (

@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import HamburgerMenu from "./HamburgerMenu";
 import { PlayerProvider } from "./PlayerContext";
+import { HistoryProvider } from "./HistoryContext";
 import GlobalPlayer from "./GlobalPlayer";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -19,9 +20,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="he" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <PlayerProvider>
-          <HamburgerMenu />
-          {children}
-          <GlobalPlayer />
+          <HistoryProvider>
+            <HamburgerMenu />
+            {children}
+            <GlobalPlayer />
+          </HistoryProvider>
         </PlayerProvider>
       </body>
     </html>

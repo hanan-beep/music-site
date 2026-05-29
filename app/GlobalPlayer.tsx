@@ -1,10 +1,26 @@
 // app/GlobalPlayer.tsx
 'use client';
 import { usePlayer } from './PlayerContext';
+import { useHistory } from './HistoryContext';
+import { useEffect } from 'react';
 
 export default function GlobalPlayer() {
   const { songs, currentIndex, playIndex, close } = usePlayer();
+  const { addToHistory } = useHistory();
   const current = currentIndex >= 0 && songs.length > 0 ? songs[currentIndex] : null;
+
+  // כשמתחיל לנגן שיר — מוסיף להיסטוריה
+  useEffect(() => {
+    if (current) {
+      addToHistory({
+        id: current.id,
+        name: current.name,
+        artistName: current.artistName,
+        albumName: current.albumName,
+      });
+    }
+  }, [current?.id]);
+
   if (!current) return null;
 
   return (

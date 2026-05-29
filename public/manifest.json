@@ -1,0 +1,26 @@
+{
+  "name": "יאללה שירים 💪",
+  "short_name": "יאללה שירים",
+  "description": "הארכיון המוזיקלי החרדי הגדול ביותר",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffecd2",
+  "theme_color": "#DD2476",
+  "orientation": "portrait",
+  "lang": "he",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

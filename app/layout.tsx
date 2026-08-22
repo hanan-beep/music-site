@@ -9,6 +9,7 @@ import { FavoritesProvider } from "./FavoritesContext";
 import { AuthProvider } from "./AuthContext";
 import GlobalPlayer from "./GlobalPlayer";
 import LoginBanner from "./LoginBanner";
+import GlobalSearch from "./GlobalSearch";
 import ServiceWorkerRegister from "./ServiceWorkerRegister";
 import Script from "next/script";
 
@@ -44,6 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <HistoryProvider>
               <FavoritesProvider>
                 <HamburgerMenu />
+                <GlobalSearch />
                 <LoginBanner />
                 {children}
                 <GlobalPlayer />

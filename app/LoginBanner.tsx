@@ -1,52 +1,86 @@
 // app/LoginBanner.tsx
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from './AuthContext';
 
 export default function LoginBanner() {
   const { user, signInWithGoogle, signOut } = useAuth();
-  const [show, setShow] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
+  const [showBanner, setShowBanner] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  // מציג את הבאנר אחרי 3 שניות אם לא מחובר
+  // באנר מופיע אחרי שנייה אחת
   useEffect(() => {
     if (user) return;
     try {
-      const d = localStorage.getItem('login_banner_dismissed');
-      if (d) { setDismissed(true); return; }
+      if (localStorage.getItem('login_dismissed')) return;
     } catch {}
-    const t = setTimeout(() => setShow(true), 3000);
+    const t = setTimeout(() => setShowBanner(true), 1000);
     return () => clearTimeout(t);
   }, [user]);
 
+  // סגירת תפריט בלחיצה מחוץ
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setShowMenu(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
   function dismiss() {
-    setShow(false);
-    setDismissed(true);
-    try { localStorage.setItem('login_banner_dismissed', '1'); } catch {}
+    setShowBanner(false);
+    try { localStorage.setItem('login_dismissed', '1'); } catch {}
   }
 
-  // מחובר — מציג מידע משתמש קטן
-  if (user) return (
-    <div className="fixed top-4 right-4 z-50 bg-white rounded-2xl shadow-lg px-4 py-2 flex items-center gap-3 border border-gray-100" dir="rtl">
-      <img src={user.user_metadata?.avatar_url} alt="" className="w-8 h-8 rounded-full" />
-      <div className="text-xs">
-        <p className="font-bold text-gray-800 truncate max-w-[120px]">{user.user_metadata?.full_name}</p>
-        <button onClick={signOut} className="text-[#DD2476] hover:underline">התנתק</button>
-      </div>
-    </div>
-  );
+  // מחובר — אייקון פרופיל עם תפריט
+  if (user) {
+    return (
+      <div className="fixed top-3 right-4 z-50" ref={menuRef}>
+        <button
+          onClick={() => setShowMenu(!showMenu)}
+          className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-lg hover:scale-105 transition-transform"
+        >
+          {user.user_metadata?.avatar_url ? (
+            <img src={user.user_metadata.avatar_url} alt="פרופיל" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full bg-[#DD2476] flex items-center justify-center text-white font-black text-sm">
+              {(user.user_metadata?.full_name || user.email || '?')[0].toUpperCase()}
+            </div>
+          )}
+        </button>
 
-  // לא מחובר + באנר
-  if (!show || dismissed) return null;
+        {showMenu && (
+          <div className="absolute left-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden" dir="rtl">
+            <div className="px-4 py-3 border-b border-gray-100">
+              <p className="font-black text-gray-800 text-sm truncate">{user.user_metadata?.full_name}</p>
+              <p className="text-gray-400 text-xs truncate">{user.email}</p>
+            </div>
+            <button
+              onClick={() => { signOut(); setShowMenu(false); }}
+              className="w-full text-right px-4 py-3 text-red-500 font-bold text-sm hover:bg-red-50 transition-colors"
+            >
+              🚪 התנתק
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // באנר התחברות
+  if (!showBanner) return null;
 
   return (
-    <div className="fixed bottom-24 right-4 z-50 w-80 bg-white rounded-3xl shadow-2xl border border-gray-100 p-5" dir="rtl">
+    <div className="fixed bottom-24 right-4 z-50 w-72 bg-white rounded-3xl shadow-2xl border border-gray-100 p-5" dir="rtl">
       <button onClick={dismiss} className="absolute top-3 left-3 text-gray-400 hover:text-gray-600 text-lg">✕</button>
-      
+
       <div className="text-center mb-4">
         <p className="text-3xl mb-2">🎵</p>
         <h3 className="font-black text-gray-800 text-lg">שמור את המוזיקה שלך!</h3>
-        <p className="text-gray-500 text-sm mt-1">התחבר כדי לשמור מועדפים והיסטוריית האזנה בכל המכשירים</p>
+        <p className="text-gray-500 text-sm mt-1">התחבר כדי לשמור מועדפים והיסטוריה בכל המכשירים</p>
       </div>
 
       <button onClick={signInWithGoogle}
@@ -60,7 +94,9 @@ export default function LoginBanner() {
         התחבר עם Google
       </button>
 
-      <p className="text-center text-gray-400 text-xs mt-3">ניתן להמשיך גם בלי התחברות</p>
+      <p className="text-center text-gray-400 text-xs mt-3 cursor-pointer hover:text-gray-600" onClick={dismiss}>
+        המשך בלי התחברות
+      </p>
     </div>
   );
 }

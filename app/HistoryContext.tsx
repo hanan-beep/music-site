@@ -1,6 +1,8 @@
 // app/HistoryContext.tsx
 'use client';
 import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { createClient } from '@/lib/supabase';
+import { useAuth } from './AuthContext';
 
 type Song = { id: string; name: string; artistName?: string; albumName?: string; listenedAt: number; };
 
@@ -11,33 +13,43 @@ type HistoryCtx = {
 };
 
 const Ctx = createContext<HistoryCtx | null>(null);
-const LS_KEY = 'yallah_history';
-const MAX_ITEMS = 50;
 
 export function HistoryProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
   const [history, setHistory] = useState<Song[]>([]);
+  const supabase = createClient();
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(LS_KEY);
-      if (saved) setHistory(JSON.parse(saved));
-    } catch {}
-  }, []);
+    if (!user) { setHistory([]); return; }
+    supabase.from('history').select('*').eq('user_id', user.email)
+      .order('listened_at', { ascending: false }).limit(50)
+      .then(({ data }) => {
+        setHistory((data || []).map((s: any) => ({
+          id: s.song_id, name: s.song_name,
+          artistName: s.artist_name, albumName: s.album_name,
+          listenedAt: new Date(s.listened_at).getTime(),
+        })));
+      });
+  }, [user]);
 
-  const addToHistory = useCallback((song: Omit<Song, 'listenedAt'>) => {
+  const addToHistory = useCallback(async (song: Omit<Song, 'listenedAt'>) => {
+    const newSong = { ...song, listenedAt: Date.now() };
     setHistory(prev => {
-      // הסר כפילות אם כבר קיים
       const filtered = prev.filter(s => s.id !== song.id);
-      const updated = [{ ...song, listenedAt: Date.now() }, ...filtered].slice(0, MAX_ITEMS);
-      try { localStorage.setItem(LS_KEY, JSON.stringify(updated)); } catch {}
-      return updated;
+      return [newSong, ...filtered].slice(0, 50);
     });
-  }, []);
+    if (!user) return;
+    await supabase.from('history').insert({
+      user_id: user.email, song_id: song.id, song_name: song.name,
+      artist_name: song.artistName, album_name: song.albumName,
+    });
+  }, [user]);
 
-  const clearHistory = useCallback(() => {
+  const clearHistory = useCallback(async () => {
     setHistory([]);
-    try { localStorage.removeItem(LS_KEY); } catch {}
-  }, []);
+    if (!user) return;
+    await supabase.from('history').delete().eq('user_id', user.email);
+  }, [user]);
 
   return (
     <Ctx.Provider value={{ history, addToHistory, clearHistory }}>

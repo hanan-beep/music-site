@@ -3,22 +3,15 @@
 import { usePlayer } from './PlayerContext';
 import { useHistory } from './HistoryContext';
 import { useEffect } from 'react';
+import { PrevIcon, NextIcon, CloseIcon } from './Icons';
 
 export default function GlobalPlayer() {
   const { songs, currentIndex, playIndex, close } = usePlayer();
   const { addToHistory } = useHistory();
   const current = currentIndex >= 0 && songs.length > 0 ? songs[currentIndex] : null;
 
-  // כשמתחיל לנגן שיר — מוסיף להיסטוריה
   useEffect(() => {
-    if (current) {
-      addToHistory({
-        id: current.id,
-        name: current.name,
-        artistName: current.artistName,
-        albumName: current.albumName,
-      });
-    }
+    if (current) addToHistory({ id: current.id, name: current.name, artistName: current.artistName, albumName: current.albumName });
   }, [current?.id]);
 
   if (!current) return null;
@@ -28,30 +21,28 @@ export default function GlobalPlayer() {
       <div className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] px-4 py-3 flex items-center gap-3 w-full">
         <button onClick={() => playIndex(currentIndex - 1)} disabled={currentIndex <= 0}
           className="flex-shrink-0 flex items-center gap-1 bg-white/20 hover:bg-white/30 disabled:opacity-30 text-white font-black px-3 py-2 rounded-xl text-sm transition-colors">
-          ⏮ <span className="hidden sm:inline">קודם</span>
+          <PrevIcon size={18} color="white" />
+          <span className="hidden sm:inline">קודם</span>
         </button>
 
         <div className="flex-1 text-center min-w-0">
-          <p className="font-black text-white truncate text-sm">
-            {current.name.replace(/\.[^/.]+$/, '')}
-          </p>
+          <p className="font-black text-white truncate text-sm">{current.name.replace(/\.[^/.]+$/, '')}</p>
           <p className="text-white/60 text-xs">{currentIndex + 1} / {songs.length}</p>
         </div>
 
         <button onClick={() => playIndex(currentIndex + 1)} disabled={currentIndex >= songs.length - 1}
           className="flex-shrink-0 flex items-center gap-1 bg-white text-[#DD2476] font-black px-3 py-2 rounded-xl hover:bg-pink-50 disabled:opacity-30 shadow text-sm transition-colors">
-          <span className="hidden sm:inline">הבא</span> ⏭
+          <span className="hidden sm:inline">הבא</span>
+          <NextIcon size={18} color="#DD2476" />
         </button>
 
-        <button onClick={close} className="flex-shrink-0 text-white hover:opacity-70 text-xl font-bold">✕</button>
+        <button onClick={close} className="flex-shrink-0 text-white hover:opacity-70">
+          <CloseIcon size={20} color="white" />
+        </button>
       </div>
       <div className="w-full bg-black" style={{ height: 80 }}>
-        <iframe
-          key={current.id}
-          src={`https://drive.google.com/file/d/${current.id}/preview`}
-          style={{ width: '100%', height: '80px', display: 'block', border: 'none' }}
-          allow="autoplay"
-        />
+        <iframe key={current.id} src={`https://drive.google.com/file/d/${current.id}/preview`}
+          style={{ width: '100%', height: '80px', display: 'block', border: 'none' }} allow="autoplay" />
       </div>
     </div>
   );

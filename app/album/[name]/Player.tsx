@@ -2,10 +2,9 @@
 'use client';
 import { usePlayer } from '@/app/PlayerContext';
 import FavButton from '@/app/FavButton';
+import { PlayIcon, DownloadIcon, FolderIcon, PrevIcon, NextIcon, CloseIcon } from '@/app/Icons';
 
-export default function Player({
-  songs, folderId, albumImage,
-}: {
+export default function Player({ songs, folderId, albumImage }: {
   songs: any[];
   folderId?: string;
   albumImage?: { id: string; name: string } | null;
@@ -18,10 +17,10 @@ export default function Player({
     <div className="pb-4">
       {folderId && (
         <div className="mb-4 flex justify-end">
-          <a href={`https://drive.google.com/drive/folders/${folderId}`}
-            target="_blank" rel="noopener noreferrer"
+          <a href={`https://drive.google.com/drive/folders/${folderId}`} target="_blank" rel="noopener noreferrer"
             className="inline-flex items-center gap-2 bg-white border-2 border-[#DD2476] text-[#DD2476] font-black px-4 py-2 rounded-2xl hover:bg-[#DD2476] hover:text-white transition-colors shadow text-sm">
-            📁 הורד תיקייה שלמה
+            <FolderIcon size={16} color="currentColor" />
+            הורד תיקייה שלמה
           </a>
         </div>
       )}
@@ -29,8 +28,7 @@ export default function Player({
       {albumImage && (
         <div className="mb-6 flex justify-center">
           <img src={`https://drive.google.com/thumbnail?id=${albumImage.id}&sz=w400`}
-            alt="תמונת אלבום"
-            className="w-48 h-48 object-cover rounded-3xl shadow-xl border-4 border-white" />
+            alt="תמונת אלבום" className="w-48 h-48 object-cover rounded-3xl shadow-xl border-4 border-white" />
         </div>
       )}
 
@@ -40,31 +38,26 @@ export default function Player({
           return (
             <div key={song.id} onClick={() => play(songs, idx)}
               className={`rounded-2xl p-4 flex items-center gap-3 shadow-md cursor-pointer transition-all duration-200 ${
-                isActive
-                  ? 'bg-gradient-to-l from-[#FF512F]/20 to-[#DD2476]/20 border-2 border-[#DD2476] scale-[1.01]'
-                  : 'bg-[#ffe8cc] hover:bg-[#ffd9aa] border-2 border-transparent'
+                isActive ? 'bg-gradient-to-l from-[#FF512F]/20 to-[#DD2476]/20 border-2 border-[#DD2476] scale-[1.01]'
+                         : 'bg-[#ffe8cc] hover:bg-[#ffd9aa] border-2 border-transparent'
               }`}>
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-black text-sm ${
-                  isActive ? 'bg-[#DD2476] text-white' : 'bg-white/60 text-gray-400'
-                }`}>
-                  {isActive ? '🎵' : idx + 1}
-                </div>
-                <h3 className={`font-bold truncate ${isActive ? 'text-[#DD2476]' : 'text-gray-800'}`}>
-                  {song.name.replace(/\.[^/.]+$/, '')}
-                </h3>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-black text-sm ${isActive ? 'bg-[#DD2476] text-white' : 'bg-white/60 text-gray-400'}`}>
+                {isActive ? <PlayIcon size={14} color="white" /> : idx + 1}
               </div>
+              <h3 className={`font-bold truncate flex-1 ${isActive ? 'text-[#DD2476]' : 'text-gray-800'}`}>
+                {song.name.replace(/\.[^/.]+$/, '')}
+              </h3>
               <div className="flex items-center gap-2 flex-shrink-0" onClick={e => e.stopPropagation()}>
                 <FavButton song={song} />
                 <button onClick={() => play(songs, idx)}
-                  className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
-                    isActive ? 'bg-[#DD2476] text-white' : 'bg-[#DD2476]/80 text-white hover:bg-[#DD2476]'
-                  }`}>
-                  {isActive ? '🎵 מנגן' : '▶️ האזן'}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-bold transition-colors ${isActive ? 'bg-[#DD2476] text-white' : 'bg-[#DD2476]/80 text-white hover:bg-[#DD2476]'}`}>
+                  <PlayIcon size={14} color="white" />
+                  {isActive ? 'מנגן' : 'האזן'}
                 </button>
                 <a href={`https://drive.google.com/uc?export=download&id=${song.id}`}
-                  className="bg-[#FF512F] text-white px-4 py-2 rounded-full text-sm font-bold hover:opacity-80">
-                  ⬇️ הורד
+                  className="flex items-center gap-1.5 bg-[#FF512F] text-white px-3 py-2 rounded-full text-sm font-bold hover:opacity-80">
+                  <DownloadIcon size={14} color="white" />
+                  הורד
                 </a>
               </div>
             </div>

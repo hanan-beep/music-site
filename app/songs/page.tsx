@@ -1,5 +1,6 @@
 // app/songs/page.tsx
 export const dynamic = 'force-dynamic';
+
 import SongsClient from './SongsClient';
 import { google } from 'googleapis';
 
@@ -32,13 +33,11 @@ async function getAllSongs() {
   const folder1 = process.env.GOOGLE_FOLDER_1!;
   const folder2 = process.env.GOOGLE_FOLDER_2!;
 
-  // שולף זמרים משתי התיקיות
   const [files1, files2] = await Promise.all([
     listFolder(folder1, drive),
     listFolder(folder2, drive),
   ]);
 
-  // מסיר כפילויות זמרים
   const seen = new Set<string>();
   const artists: any[] = [];
   for (const f of [...files1, ...files2]) {
@@ -49,7 +48,6 @@ async function getAllSongs() {
     artists.push(f);
   }
 
-  // שולף תוכן כל זמר
   const artistContents = await Promise.all(
     artists.map(async (artist) => {
       const contents = await listFolder(artist.id, drive);
@@ -80,7 +78,6 @@ async function getAllSongs() {
     })
   );
 
-  // תיקיית שירים חדשים
   const extraFiles = await listFolder(EXTRA_FOLDER_ID, drive);
   const extra = extraFiles
     .filter((f: any) => f.mimeType !== 'application/vnd.google-apps.folder')

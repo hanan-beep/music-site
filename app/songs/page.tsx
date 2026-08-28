@@ -1,53 +1,94 @@
 // app/songs/page.tsx
 import SongsClient from './SongsClient';
+import { google } from 'googleapis';
 
 const EXTRA_FOLDER_ID = '1b6Z7prAcoSS8fwpk8hqsD6g-loB-hbn1';
 const AUDIO = /\.(mp3|m4a|aac|wav|flac|ogg|opus|wma)$/i;
-const BASE = 'https://music-site-flame.vercel.app/api/drive';
+
+const auth = new google.auth.GoogleAuth({
+  credentials: {
+    client_email: process.env.GOOGLE_CLIENT_EMAIL,
+    private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+  },
+  scopes: ['https://www.googleapis.com/auth/drive.readonly'],
+});
+
+async function listFolder(folderId: string, drive: any) {
+  const res = await drive.files.list({
+    q: `'${folderId}' in parents and trashed = false`,
+    fields: 'files(id, name, mimeType, createdTime)',
+    orderBy: 'name',
+    supportsAllDrives: true,
+    includeItemsFromAllDrives: true,
+    pageSize: 1000,
+  });
+  return res.data.files || [];
+}
 
 async function getAllSongs() {
-  const artistsRes = await fetch(BASE, { next: { revalidate: 3600 } });
-  const artists = await artistsRes.json();
+  const drive = google.drive({ version: 'v3', auth });
 
+  const folder1 = process.env.GOOGLE_FOLDER_1!;
+  const folder2 = process.env.GOOGLE_FOLDER_2!;
+
+  // שולף זמרים משתי התיקיות
+  const [files1, files2] = await Promise.all([
+    listFolder(folder1, drive),
+    listFolder(folder2, drive),
+  ]);
+
+  // מסיר כפילויות זמרים
+  const seen = new Set<string>();
+  const artists: any[] = [];
+  for (const f of [...files1, ...files2]) {
+    if (f.mimeType !== 'application/vnd.google-apps.folder') continue;
+    const key = f.name.trim().toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    artists.push(f);
+  }
+
+  // שולף תוכן כל זמר
   const artistContents = await Promise.all(
-    artists.map(async (artist: any) => {
-      const res = await fetch(`${BASE}?folderId=${artist.id}`, { next: { revalidate: 3600 } });
-      const contents = await res.json();
+    artists.map(async (artist) => {
+      const contents = await listFolder(artist.id, drive);
       return { artist, contents };
     })
   );
 
-  const songArrays = await Promise.all(
-    artistContents.flatMap(({ artist, contents }) => {
-      const folders = contents.filter((f: any) => f.mimeType === 'application/vnd.google-apps.folder');
-      const direct = contents
-        .filter((f: any) => f.mimeType !== 'application/vnd.google-apps.folder' && AUDIO.test(f.name))
-        .map((s: any) => ({ id: s.id, name: s.name, artistName: artist.name, albumName: '', isNew: false, driveOrder: 999999, createdTime: s.createdTime }));
+  const regularSongs: any[] = [];
 
-      return [
-        Promise.resolve(direct),
-        ...folders.map(async (folder: any) => {
-          const res = await fetch(`${BASE}?folderId=${folder.id}`, { next: { revalidate: 3600 } });
-          const items = await res.json();
-          return items
-            .filter((f: any) => f.mimeType !== 'application/vnd.google-apps.folder' && AUDIO.test(f.name))
-            .map((s: any) => ({ id: s.id, name: s.name, artistName: artist.name, albumName: folder.name, isNew: false, driveOrder: 999999, createdTime: s.createdTime }));
-        }),
-      ];
+  await Promise.all(
+    artistContents.map(async ({ artist, contents }) => {
+      const folders = contents.filter((f: any) => f.mimeType === 'application/vnd.google-apps.folder');
+      const direct = contents.filter((f: any) => f.mimeType !== 'application/vnd.google-apps.folder' && AUDIO.test(f.name));
+
+      direct.forEach((s: any) => regularSongs.push({
+        id: s.id, name: s.name, artistName: artist.name, albumName: '',
+        isNew: false, driveOrder: 999999, createdTime: s.createdTime,
+      }));
+
+      await Promise.all(folders.map(async (folder: any) => {
+        const items = await listFolder(folder.id, drive);
+        items.filter((f: any) => f.mimeType !== 'application/vnd.google-apps.folder' && AUDIO.test(f.name))
+          .forEach((s: any) => regularSongs.push({
+            id: s.id, name: s.name, artistName: artist.name, albumName: folder.name,
+            isNew: false, driveOrder: 999999, createdTime: s.createdTime,
+          }));
+      }));
     })
   );
 
   // תיקיית שירים חדשים
-  const extraRes = await fetch(`${BASE}?folderId=${EXTRA_FOLDER_ID}`, { cache: 'no-store' });
-  const extraRaw = await extraRes.json();
-  const extra = (Array.isArray(extraRaw) ? extraRaw : [])
+  const extraFiles = await listFolder(EXTRA_FOLDER_ID, drive);
+  const extra = extraFiles
     .filter((f: any) => f.mimeType !== 'application/vnd.google-apps.folder')
     .map((s: any, i: number) => ({
       id: s.id, name: s.name, artistName: '', albumName: 'שירים חדשים',
       isNew: true, driveOrder: i, createdTime: s.createdTime,
     }));
 
-  return { regularSongs: songArrays.flat(), extra };
+  return { regularSongs, extra };
 }
 
 export default async function SongsPage() {

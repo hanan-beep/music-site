@@ -8,12 +8,12 @@ export default function HamburgerMenu() {
   const [open, setOpen] = useState(false);
 
   const links = [
-    { href: '/',          icon: <HomeIcon size={24} color="white" />,        label: 'דף הבית' },
-    { href: '/artists',   icon: <MicIcon size={24} color="white" />,         label: 'זמרים' },
-    { href: '/albums',    icon: <AlbumIcon size={24} color="white" />,       label: 'אלבומים' },
-    { href: '/songs',     icon: <MusicNoteIcon size={24} color="white" />,   label: 'שירים' },
-    { href: '/favorites', icon: <HeartIcon size={24} filled color="white" />,label: 'מועדפים' },
-    { href: '/history',   icon: <HistoryIcon size={24} color="white" />,     label: 'היסטוריית האזנה' },
+    { href: '/',          icon: <HomeIcon size={24} color="#FFD700" />,         label: 'דף הבית' },
+    { href: '/artists',   icon: <MicIcon size={24} color="#FF9FF3" />,          label: 'זמרים' },
+    { href: '/albums',    icon: <AlbumIcon size={24} color="#54A0FF" />,        label: 'אלבומים' },
+    { href: '/songs',     icon: <MusicNoteIcon size={24} color="#5FF5A0" />,    label: 'שירים' },
+    { href: '/favorites', icon: <HeartIcon size={24} filled color="#FF6B9D" />, label: 'מועדפים' },
+    { href: '/history',   icon: <HistoryIcon size={24} color="#FFA502" />,      label: 'היסטוריית האזנה' },
   ];
 
   return (
@@ -31,11 +31,11 @@ export default function HamburgerMenu() {
           <button onClick={() => setOpen(false)}><CloseIcon size={24} color="white" /></button>
         </div>
 
-        <nav className="flex flex-col p-6 gap-2 flex-1 overflow-y-auto">
+        <nav className="flex flex-col p-6 gap-1 flex-1 overflow-y-auto">
           {links.map((item) => (
             <Link key={item.href} href={item.href} onClick={() => setOpen(false)}
               className="flex items-center gap-4 px-4 py-3 rounded-2xl text-white font-bold text-lg hover:bg-white/20 transition-colors">
-              {item.icon}
+              <span className="w-8 flex justify-center">{item.icon}</span>
               {item.label}
             </Link>
           ))}
@@ -44,7 +44,7 @@ export default function HamburgerMenu() {
 
           <Link href="/contact" onClick={() => setOpen(false)}
             className="flex items-center gap-4 px-4 py-3 rounded-2xl text-white font-bold text-lg hover:bg-white/20 transition-colors">
-            <MailIcon size={24} color="white" />
+            <span className="w-8 flex justify-center"><MailIcon size={24} color="#74B9FF" /></span>
             <div>
               <div>צור קשר</div>
               <div className="text-white/60 text-sm font-normal">חסר שיר? יש הערה?</div>

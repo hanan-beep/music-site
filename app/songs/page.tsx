@@ -1,4 +1,5 @@
 // app/songs/page.tsx
+export const dynamic = 'force-dynamic';
 import SongsClient from './SongsClient';
 import { google } from 'googleapis';
 

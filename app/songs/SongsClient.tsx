@@ -7,7 +7,10 @@ import { PlayIcon, DownloadIcon, SearchIcon } from '@/app/Icons';
 
 const PAGE_SIZE = 50;
 
-type Song = { id: string; name: string; artistName: string; albumName: string; isNew: boolean; driveOrder: number; createdTime?: string; };
+type Song = {
+  id: string; name: string; artistName: string; albumName: string;
+  isNew: boolean; driveOrder: number; createdTime?: string; isMonthly?: boolean;
+};
 
 function isWithinDays(dateStr: string, days: number) {
   return (Date.now() - new Date(dateStr).getTime()) < days * 86400000;
@@ -39,7 +42,8 @@ export default function SongsClient({ regularSongs, extraSongs }: { regularSongs
     const query = search.toLowerCase();
     const match = (s: Song) =>
       s.name.replace(/\.[^/.]+$/, '').toLowerCase().includes(query) ||
-      s.artistName.toLowerCase().includes(query);
+      s.artistName.toLowerCase().includes(query) ||
+      s.albumName.toLowerCase().includes(query);
 
     const dedup = (arr: Song[]) => {
       const seen = new Set<string>();
@@ -51,14 +55,20 @@ export default function SongsClient({ regularSongs, extraSongs }: { regularSongs
     };
 
     if (sort === 'newest') {
-      const newF = dedup(extraSongs.filter(match)).sort((a, b) => a.driveOrder - b.driveOrder);
-      const newIds = new Set(newF.map(s => s.name.replace(/\.[^/.]+$/, '').trim().toLowerCase()));
-      const regF = dedup(regularSongs.filter(match).filter(s => !newIds.has(s.name.replace(/\.[^/.]+$/, '').trim().toLowerCase())))
+      // שירים חודשיים קודם (לפי תאריך עלייה חדש→ישן), אחר כך שירי זמרים א-ב
+      const monthlyF = dedup(extraSongs.filter(match))
+        .sort((a, b) => new Date(b.createdTime!).getTime() - new Date(a.createdTime!).getTime());
+      const monthIds = new Set(monthlyF.map(s => s.name.replace(/\.[^/.]+$/, '').trim().toLowerCase()));
+      const regF = dedup(regularSongs.filter(match).filter(s => !monthIds.has(s.name.replace(/\.[^/.]+$/, '').trim().toLowerCase())))
         .sort((a, b) => a.name.replace(/\.[^/.]+$/, '').localeCompare(b.name.replace(/\.[^/.]+$/, ''), 'he'));
-      return [...newF, ...regF];
+      return [...monthlyF, ...regF];
     }
-    if (sort === 'week') return dedup(extraSongs.filter(match).filter(s => s.createdTime && isWithinDays(s.createdTime, 7))).sort((a, b) => new Date(b.createdTime!).getTime() - new Date(a.createdTime!).getTime());
-    if (sort === 'month') return dedup(extraSongs.filter(match).filter(s => s.createdTime && isWithinDays(s.createdTime, 30))).sort((a, b) => new Date(b.createdTime!).getTime() - new Date(a.createdTime!).getTime());
+    if (sort === 'week')
+      return dedup(extraSongs.filter(match).filter(s => s.createdTime && isWithinDays(s.createdTime, 7)))
+        .sort((a, b) => new Date(b.createdTime!).getTime() - new Date(a.createdTime!).getTime());
+    if (sort === 'month')
+      return dedup(extraSongs.filter(match).filter(s => s.createdTime && isWithinDays(s.createdTime, 30)))
+        .sort((a, b) => new Date(b.createdTime!).getTime() - new Date(a.createdTime!).getTime());
     if (sort === 'date' && selectedDate) {
       const target = new Date(selectedDate);
       return dedup(extraSongs.filter(match).filter(s => s.createdTime && isSameDay(s.createdTime, target)));
@@ -69,11 +79,8 @@ export default function SongsClient({ regularSongs, extraSongs }: { regularSongs
     });
   }, [regularSongs, extraSongs, search, sort, selectedDate]);
 
-  // Pagination
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const pageSongs = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
-  // reset page on filter change
   useMemo(() => setPage(1), [search, sort, selectedDate]);
 
   const isThisPlaylist = globalSongs.length > 0 && filtered.length > 0 && globalSongs[0]?.id === filtered[0]?.id;
@@ -86,10 +93,9 @@ export default function SongsClient({ regularSongs, extraSongs }: { regularSongs
         <h1 className="text-3xl font-black text-white">🎵 שירים</h1>
       </header>
 
-      {/* חיפוש */}
       <div className="px-6 pt-6 pb-3">
         <div className="relative">
-          <input type="text" placeholder="חיפוש שיר או זמר..." value={search}
+          <input type="text" placeholder="חיפוש שיר, זמר או חודש..." value={search}
             onChange={e => setSearch(e.target.value)}
             className="w-full rounded-2xl pr-12 pl-4 py-3 border-2 border-[#DD2476]/30 bg-white/80 text-gray-800 font-bold placeholder-gray-400 focus:outline-none focus:border-[#DD2476] shadow" />
           <div className="absolute right-4 top-1/2 -translate-y-1/2">
@@ -98,7 +104,6 @@ export default function SongsClient({ regularSongs, extraSongs }: { regularSongs
         </div>
       </div>
 
-      {/* כפתורי מיון */}
       <div className="px-6 pb-4">
         <div className="flex gap-2 overflow-x-auto pb-1">
           {SORT_OPTIONS.map(opt => (
@@ -108,26 +113,22 @@ export default function SongsClient({ regularSongs, extraSongs }: { regularSongs
                   ? 'bg-gradient-to-r from-[#FF512F] to-[#DD2476] text-white shadow-lg scale-105'
                   : 'bg-white/80 text-gray-600 border-2 border-gray-200 hover:border-[#DD2476]'
               }`}>
-              <span>{opt.icon}</span><span>{opt.label}</span>
+              {opt.icon} {opt.label}
             </button>
           ))}
         </div>
         {sort === 'date' && (
-          <div className="mt-3">
-            <input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)}
-              className="rounded-2xl px-4 py-3 border-2 border-[#DD2476] bg-white text-gray-800 font-bold focus:outline-none shadow w-full sm:w-auto" />
-          </div>
+          <input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)}
+            className="mt-3 rounded-2xl px-4 py-3 border-2 border-[#DD2476] bg-white text-gray-800 font-bold focus:outline-none shadow w-full sm:w-auto" />
         )}
       </div>
 
       <section className="flex flex-col gap-3 px-6">
-        {/* מידע */}
         <div className="flex items-center justify-between text-sm text-gray-500 mb-1">
           <span>{filtered.length} שירים</span>
           {totalPages > 1 && <span>עמוד {page} מתוך {totalPages}</span>}
         </div>
 
-        {/* שירים */}
         {pageSongs.map((song, idx) => {
           const globalIdx = (page - 1) * PAGE_SIZE + idx;
           const isActive = activeIndex === globalIdx;
@@ -142,18 +143,25 @@ export default function SongsClient({ regularSongs, extraSongs }: { regularSongs
                 <img src="/logo.png" alt="" className="w-full h-full object-cover" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  {song.isNew && <span className="text-xs bg-[#DD2476] text-white px-2 py-0.5 rounded-full font-black flex-shrink-0">חדש</span>}
+                <div className="flex items-center gap-2 flex-wrap">
+                  {/* תג חדש — רק לשירים חודשיים שעלו בפחות מ-14 יום */}
+                  {song.isNew && song.isMonthly && (
+                    <span className="text-xs bg-[#DD2476] text-white px-2 py-0.5 rounded-full font-black flex-shrink-0">✨ חדש</span>
+                  )}
                   <h3 className={`font-bold truncate text-sm ${isActive ? 'text-[#DD2476]' : 'text-gray-800'}`}>
                     {song.name.replace(/\.[^/.]+$/, '')}
                   </h3>
                 </div>
-                {song.artistName && <p className="text-xs text-gray-500 truncate mt-0.5">🎤 {song.artistName}</p>}
+                <p className="text-xs text-gray-500 truncate mt-0.5">
+                  {song.artistName && `🎤 ${song.artistName}`}
+                  {song.artistName && song.albumName && ' · '}
+                  {song.albumName && `📅 ${song.albumName}`}
+                </p>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0" onClick={e => e.stopPropagation()}>
                 <FavButton song={song} size="sm" />
                 <button onClick={() => play(filtered, globalIdx)}
-                  className={`flex items-center gap-1 px-3 py-2 rounded-xl text-sm font-black transition-all ${isActive ? 'bg-[#DD2476] text-white shadow' : 'bg-[#DD2476] text-white hover:opacity-80'}`}>
+                  className={`flex items-center gap-1 px-3 py-2 rounded-xl text-sm font-black ${isActive ? 'bg-[#DD2476] text-white' : 'bg-[#DD2476] text-white hover:opacity-80'}`}>
                   <PlayIcon size={14} color="white" />
                   <span className="hidden sm:inline">{isActive ? 'מנגן' : 'האזן'}</span>
                 </button>
@@ -181,10 +189,9 @@ export default function SongsClient({ regularSongs, extraSongs }: { regularSongs
           <div className="flex items-center justify-center gap-3 py-6">
             <button onClick={() => { setPage(p => Math.max(1, p - 1)); window.scrollTo(0, 0); }}
               disabled={page === 1}
-              className="px-5 py-2.5 rounded-2xl font-black text-sm bg-white border-2 border-[#DD2476] text-[#DD2476] hover:bg-[#DD2476] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+              className="px-5 py-2.5 rounded-2xl font-black text-sm bg-white border-2 border-[#DD2476] text-[#DD2476] hover:bg-[#DD2476] hover:text-white disabled:opacity-30 transition-all">
               → קודם
             </button>
-
             <div className="flex gap-1">
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                 let p = i + 1;
@@ -203,10 +210,9 @@ export default function SongsClient({ regularSongs, extraSongs }: { regularSongs
                 );
               })}
             </div>
-
             <button onClick={() => { setPage(p => Math.min(totalPages, p + 1)); window.scrollTo(0, 0); }}
               disabled={page === totalPages}
-              className="px-5 py-2.5 rounded-2xl font-black text-sm bg-white border-2 border-[#DD2476] text-[#DD2476] hover:bg-[#DD2476] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+              className="px-5 py-2.5 rounded-2xl font-black text-sm bg-white border-2 border-[#DD2476] text-[#DD2476] hover:bg-[#DD2476] hover:text-white disabled:opacity-30 transition-all">
               הבא ←
             </button>
           </div>

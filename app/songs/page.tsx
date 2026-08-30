@@ -4,8 +4,9 @@ export const dynamic = 'force-dynamic';
 import SongsClient from './SongsClient';
 import { google } from 'googleapis';
 
-const EXTRA_FOLDER_ID = '1b6Z7prAcoSS8fwpk8hqsD6g-loB-hbn1';
+const MONTHLY_FOLDER_ID = '1mlTjhQHWEe1x-GXbw10zVF9EtGxmtn72';
 const AUDIO = /\.(mp3|m4a|aac|wav|flac|ogg|opus|wma)$/i;
+const TWO_WEEKS = 14 * 24 * 60 * 60 * 1000;
 
 const auth = new google.auth.GoogleAuth({
   credentials: {
@@ -19,7 +20,6 @@ async function listFolder(folderId: string, drive: any) {
   const res = await drive.files.list({
     q: `'${folderId}' in parents and trashed = false`,
     fields: 'files(id, name, mimeType, createdTime)',
-    orderBy: 'name',
     supportsAllDrives: true,
     includeItemsFromAllDrives: true,
     pageSize: 1000,
@@ -33,6 +33,7 @@ async function getAllSongs() {
   const folder1 = process.env.GOOGLE_FOLDER_1!;
   const folder2 = process.env.GOOGLE_FOLDER_2!;
 
+  // זמרים משתי התיקיות הראשיות
   const [files1, files2] = await Promise.all([
     listFolder(folder1, drive),
     listFolder(folder2, drive),
@@ -48,6 +49,7 @@ async function getAllSongs() {
     artists.push(f);
   }
 
+  // שירים מזמרים
   const artistContents = await Promise.all(
     artists.map(async (artist) => {
       const contents = await listFolder(artist.id, drive);
@@ -78,18 +80,41 @@ async function getAllSongs() {
     })
   );
 
-  const extraFiles = await listFolder(EXTRA_FOLDER_ID, drive);
-  const extra = extraFiles
-    .filter((f: any) => f.mimeType !== 'application/vnd.google-apps.folder')
-    .map((s: any, i: number) => ({
-      id: s.id, name: s.name, artistName: '', albumName: 'שירים חדשים',
-      isNew: true, driveOrder: i, createdTime: s.createdTime,
-    }));
+  // שירים חדשים מתיקיית החודשים
+  // שולף תיקיות החודשים
+  const monthFolders = await listFolder(MONTHLY_FOLDER_ID, drive);
+  const monthDirs = monthFolders.filter((f: any) => f.mimeType === 'application/vnd.google-apps.folder');
 
-  return { regularSongs, extra };
+  // שולף שירים מכל תיקיית חודש
+  const monthSongsArrays = await Promise.all(
+    monthDirs.map(async (month: any) => {
+      const items = await listFolder(month.id, drive);
+      return items
+        .filter((f: any) => f.mimeType !== 'application/vnd.google-apps.folder' && AUDIO.test(f.name))
+        .map((s: any, i: number) => {
+          const uploadedAt = new Date(s.createdTime).getTime();
+          const isNew = Date.now() - uploadedAt < TWO_WEEKS;
+          return {
+            id: s.id,
+            name: s.name,
+            artistName: '',
+            albumName: month.name, // שם החודש
+            isNew,
+            driveOrder: i,
+            createdTime: s.createdTime,
+            isMonthly: true, // סימון שזה שיר חודשי
+          };
+        });
+    })
+  );
+
+  const monthlySongs = monthSongsArrays.flat()
+    .sort((a, b) => new Date(b.createdTime).getTime() - new Date(a.createdTime).getTime());
+
+  return { regularSongs, monthlySongs };
 }
 
 export default async function SongsPage() {
-  const { regularSongs, extra } = await getAllSongs();
-  return <SongsClient regularSongs={regularSongs} extraSongs={extra} />;
+  const { regularSongs, monthlySongs } = await getAllSongs();
+  return <SongsClient regularSongs={regularSongs} extraSongs={monthlySongs} />;
 }

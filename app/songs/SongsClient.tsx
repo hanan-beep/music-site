@@ -27,8 +27,8 @@ const SORT_OPTIONS: { value: SortMode; label: string; icon: string }[] = [
   { value: 'week',      label: 'שבוע אחרון',   icon: '⚡' },
   { value: 'month',     label: 'חודש אחרון',   icon: '🌙' },
   { value: 'date',      label: 'תאריך ספציפי', icon: '🗓' },
-  { value: 'alpha-asc', label: 'א → ת',        icon: '🔤' },
-  { value: 'alpha-desc',label: 'א → ת',        icon: '🔡' },
+  { value: 'alpha-asc', label: 'א ← ת',        icon: '🔤' },
+  { value: 'alpha-desc',label: 'ת ← א',        icon: '🔡' },
 ];
 
 export default function SongsClient({ regularSongs, extraSongs }: { regularSongs: Song[]; extraSongs: Song[]; }) {

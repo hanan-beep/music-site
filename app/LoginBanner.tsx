@@ -43,7 +43,7 @@ export default function LoginBanner() {
       </button>
 
       {showMenu && (
-        <div className="absolute left-0 mt-2 w-60 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden" dir="rtl">
+        <div className="absolute right-0 mt-2 w-60 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden" dir="rtl">
           <div className="px-4 py-3 border-b border-gray-100">
             {user.user_metadata?.avatar_url && (
               <img src={user.user_metadata.avatar_url} alt="" className="w-10 h-10 rounded-full mb-2" />

@@ -38,8 +38,8 @@ export default function AlbumsClient({ albums }: { albums: any[] }) {
         </div>
         <select value={sort} onChange={e => setSort(e.target.value as any)}
           className="rounded-2xl px-4 py-3 border-2 border-[#DD2476]/30 bg-white/80 text-gray-800 font-bold focus:outline-none focus:border-[#DD2476] shadow">
-          <option value="alpha-asc">א → ת</option>
-          <option value="alpha-desc">ת → א</option>
+          <option value="alpha-asc">א ← ת</option>
+          <option value="alpha-desc">ת ← א</option>
         </select>
       </div>
 

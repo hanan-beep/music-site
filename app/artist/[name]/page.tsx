@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import Player from '@/app/album/[name]/Player';
 import BackButton from '@/app/BackButton';
+import { MicIcon, AlbumIcon, FolderIcon } from '@/app/Icons';
 
 async function getArtistData(artistName: string) {
   const res = await fetch('https://music-site-flame.vercel.app/api/drive', {
@@ -35,26 +36,34 @@ export default async function ArtistPage({ params }: any) {
     <main className="min-h-screen bg-gradient-to-br from-[#ffecd2] via-[#fcb69f] to-[#ffd1a9]" dir="rtl">
       <header className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] p-6 text-center shadow-2xl">
         <BackButton label="→ חזרה לזמרים" />
-        <h1 className="text-3xl font-black text-white">🎤 {artistName}</h1>
+        <div className="flex items-center justify-center gap-3">
+          <MicIcon size={32} color="white" />
+          <h1 className="text-3xl font-black text-white">{artistName}</h1>
+        </div>
       </header>
 
       <div className="p-8 pb-48">
         {folders.length > 0 && (
           <section className="mb-10">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-black text-[#DD2476]">💿 אלבומים</h2>
+              <h2 className="text-2xl font-black text-[#DD2476] flex items-center gap-2">
+                <AlbumIcon size={24} color="#DD2476" /> אלבומים
+              </h2>
               <a href={`https://drive.google.com/drive/folders/${artist.id}`}
                 target="_blank" rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-white border-2 border-[#DD2476] text-[#DD2476] font-bold text-sm px-4 py-2 rounded-2xl hover:bg-[#DD2476] hover:text-white transition-colors shadow">
-                📁 הורד הכל מדרייב
+                <FolderIcon size={16} color="currentColor" />
+                הורד הכל מדרייב
               </a>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {folders.map((folder: any) => (
                 <Link key={folder.id}
                   href={`/album/${folder.id}?name=${encodeURIComponent(folder.name)}`}
-                  className="bg-[#ffe8cc] rounded-2xl p-4 text-center hover:scale-105 transition-transform shadow-md block">
-                  <div className="text-4xl mb-2">💿</div>
+                  className="bg-[#ffe8cc] rounded-2xl p-4 text-center hover:scale-105 transition-transform shadow-md block group">
+                  <div className="flex justify-center mb-2 group-hover:scale-110 transition-transform">
+                    <AlbumIcon size={40} color="#54A0FF" />
+                  </div>
                   <h3 className="font-bold text-[#DD2476]">{folder.name}</h3>
                 </Link>
               ))}
@@ -64,7 +73,9 @@ export default async function ArtistPage({ params }: any) {
 
         {songs.length > 0 && (
           <section>
-            <h2 className="text-2xl font-black text-[#DD2476] mb-4">🎵 שירים</h2>
+            <h2 className="text-2xl font-black text-[#DD2476] mb-4 flex items-center gap-2">
+              🎵 שירים
+            </h2>
             <Player songs={songs} folderId={artist.id} />
           </section>
         )}

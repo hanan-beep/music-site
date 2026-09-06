@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState, useMemo } from 'react';
 import { AlbumIcon, MicIcon, SearchIcon } from '@/app/Icons';
+import AlbumFavButton from '@/app/AlbumFavButton';
 
 export default function AlbumsClient({ albums }: { albums: any[] }) {
   const [search, setSearch] = useState('');
@@ -45,18 +46,21 @@ export default function AlbumsClient({ albums }: { albums: any[] }) {
 
       <section className="grid grid-cols-2 md:grid-cols-4 gap-6 p-6">
         {filtered.map((album: any) => (
-          <Link key={album.id}
-            href={`/album/${album.id}?name=${encodeURIComponent(album.name)}`}
-            className="bg-[#ffe8cc] rounded-3xl p-5 text-center hover:scale-105 transition-transform cursor-pointer shadow-md block group">
-            <div className="flex justify-center mb-2 group-hover:scale-110 transition-transform">
-              <AlbumIcon size={44} color="#54A0FF" />
-            </div>
-            <h3 className="font-bold text-[#DD2476] leading-tight">{album.name}</h3>
-            <p className="text-gray-500 text-sm mt-1 flex items-center justify-center gap-1">
-              <MicIcon size={12} color="#999" />
-              {album.artistName}
-            </p>
-          </Link>
+          <div key={album.id} className="relative">
+            <Link
+              href={`/album/${album.id}?name=${encodeURIComponent(album.name)}`}
+              className="bg-[#ffe8cc] rounded-3xl p-5 text-center hover:scale-105 transition-transform cursor-pointer shadow-md block group">
+              <div className="flex justify-center mb-2 group-hover:scale-110 transition-transform">
+                <AlbumIcon size={44} color="#54A0FF" />
+              </div>
+              <h3 className="font-bold text-[#DD2476] leading-tight">{album.name}</h3>
+              <p className="text-gray-500 text-sm mt-1 flex items-center justify-center gap-1">
+                <MicIcon size={12} color="#999" />
+                {album.artistName}
+              </p>
+            </Link>
+            <AlbumFavButton album={{ id: album.id, name: album.name, artistName: album.artistName }} />
+          </div>
         ))}
         {filtered.length === 0 && (
           <p className="col-span-4 text-center text-gray-500 py-10">לא נמצאו תוצאות</p>

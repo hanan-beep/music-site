@@ -33,7 +33,6 @@ export default async function AlbumPage({ params, searchParams }: any) {
         <div className="flex items-center justify-center gap-3">
           <AlbumIcon size={32} color="white" />
           <h1 className="text-3xl font-black text-white">{albumName}</h1>
-          {/* כפתור מועדפים לאלבום */}
           <AlbumFavButton album={{ id: folderId, name: albumName }} />
         </div>
       </header>
@@ -46,15 +45,17 @@ export default async function AlbumPage({ params, searchParams }: any) {
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {folders.map((folder: any) => (
-                <Link key={folder.id}
-                  href={`/album/${folder.id}?name=${encodeURIComponent(folder.name)}`}
-                  className="bg-[#ffe8cc] rounded-2xl p-4 text-center hover:scale-105 transition-transform shadow-md block group relative">
-                  <div className="flex justify-center mb-2 group-hover:scale-110 transition-transform">
-                    <FolderIcon size={40} color="#FFA502" />
-                  </div>
-                  <h3 className="font-bold text-[#DD2476]">{folder.name}</h3>
+                <div key={folder.id} className="relative">
+                  <Link
+                    href={`/album/${folder.id}?name=${encodeURIComponent(folder.name)}`}
+                    className="bg-[#ffe8cc] rounded-2xl p-4 text-center hover:scale-105 transition-transform shadow-md block group">
+                    <div className="flex justify-center mb-2 group-hover:scale-110 transition-transform">
+                      <FolderIcon size={40} color="#FFA502" />
+                    </div>
+                    <h3 className="font-bold text-[#DD2476]">{folder.name}</h3>
+                  </Link>
                   <AlbumFavButton album={{ id: folder.id, name: folder.name }} />
-                </Link>
+                </div>
               ))}
             </div>
           </section>

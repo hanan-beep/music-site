@@ -43,11 +43,29 @@ export default function ArtistsClient({ artists }: { artists: any[] }) {
       <section className="grid grid-cols-2 md:grid-cols-4 gap-6 p-6">
         {filtered.map((artist: any) => (
           <Link key={artist.id} href={`/artist/${encodeURIComponent(artist.name)}`}
-            className="bg-[#ffe8cc] rounded-3xl p-6 text-center hover:scale-105 transition-transform cursor-pointer shadow-md block group">
-            <div className="flex justify-center mb-3 group-hover:scale-110 transition-transform">
-              <MicIcon size={48} color="#FF9FF3" />
+            className="bg-[#ffe8cc] rounded-3xl overflow-hidden text-center hover:scale-105 transition-transform cursor-pointer shadow-md block group">
+            
+            {/* תמונת זמר או רקע ברירת מחדל */}
+            {artist.imageId ? (
+              <div className="w-full h-32 overflow-hidden">
+                <img
+                  src={`https://drive.google.com/thumbnail?id=${artist.imageId}&sz=w300`}
+                  alt={artist.name}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="w-full h-32 bg-gradient-to-br from-[#FF512F]/20 to-[#DD2476]/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <MicIcon size={48} color="#FF9FF3" />
+              </div>
+            )}
+
+            <div className="p-4">
+              <h3 className="font-bold text-lg text-[#DD2476]">{artist.name}</h3>
             </div>
-            <h3 className="font-bold text-lg text-[#DD2476]">{artist.name}</h3>
           </Link>
         ))}
         {filtered.length === 0 && (

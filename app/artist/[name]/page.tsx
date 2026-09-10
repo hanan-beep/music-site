@@ -6,6 +6,8 @@ import AlbumFavButton from '@/app/AlbumFavButton';
 import ArtistFavButton from '@/app/ArtistFavButton';
 import { MicIcon, AlbumIcon, FolderIcon } from '@/app/Icons';
 
+const IMAGE_MIME = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/jpg'];
+
 async function getArtistData(artistName: string) {
   const res = await fetch('https://music-site-flame.vercel.app/api/drive', {
     next: { revalidate: 3600 },
@@ -33,15 +35,32 @@ export default async function ArtistPage({ params }: any) {
   const contents = await getFolderContents(artist.id);
   const folders = contents.filter((f: any) => f.mimeType === 'application/vnd.google-apps.folder');
   const songs = contents.filter((f: any) => f.mimeType !== 'application/vnd.google-apps.folder');
+  
+  // תמונת הזמר
+  const artistImage = contents.find((f: any) => IMAGE_MIME.includes(f.mimeType));
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#ffecd2] via-[#fcb69f] to-[#ffd1a9]" dir="rtl">
       <header className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] p-6 text-center shadow-2xl">
         <BackButton label="→ חזרה לזמרים" />
+        
+        {/* תמונה עגולה */}
+        <div className="flex justify-center mb-3">
+          {artistImage ? (
+            <img
+              src={`https://drive.google.com/thumbnail?id=${artistImage.id}&sz=w300`}
+              alt={artistName}
+              className="w-24 h-24 rounded-full object-cover object-center border-4 border-white shadow-xl"
+            />
+          ) : (
+            <div className="w-24 h-24 rounded-full bg-white/20 border-4 border-white shadow-xl flex items-center justify-center">
+              <MicIcon size={40} color="white" />
+            </div>
+          )}
+        </div>
+
         <div className="flex items-center justify-center gap-3">
-          <MicIcon size={32} color="white" />
           <h1 className="text-3xl font-black text-white">{artistName}</h1>
-          {/* כפתור מועדפים לזמר */}
           <ArtistFavButton artist={{ id: artist.id, name: artistName }} />
         </div>
       </header>
@@ -62,15 +81,16 @@ export default async function ArtistPage({ params }: any) {
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {folders.map((folder: any) => (
-                <Link key={folder.id}
-                  href={`/album/${folder.id}?name=${encodeURIComponent(folder.name)}`}
-                  className="bg-[#ffe8cc] rounded-2xl p-4 text-center hover:scale-105 transition-transform shadow-md block group relative">
-                  <div className="flex justify-center mb-2 group-hover:scale-110 transition-transform">
-                    <AlbumIcon size={40} color="#54A0FF" />
-                  </div>
-                  <h3 className="font-bold text-[#DD2476]">{folder.name}</h3>
+                <div key={folder.id} className="relative">
+                  <Link href={`/album/${folder.id}?name=${encodeURIComponent(folder.name)}`}
+                    className="bg-[#ffe8cc] rounded-2xl p-4 text-center hover:scale-105 transition-transform shadow-md block group">
+                    <div className="flex justify-center mb-2 group-hover:scale-110 transition-transform">
+                      <AlbumIcon size={40} color="#54A0FF" />
+                    </div>
+                    <h3 className="font-bold text-[#DD2476]">{folder.name}</h3>
+                  </Link>
                   <AlbumFavButton album={{ id: folder.id, name: folder.name, artistName }} />
-                </Link>
+                </div>
               ))}
             </div>
           </section>

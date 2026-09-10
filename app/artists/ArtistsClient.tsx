@@ -40,31 +40,29 @@ export default function ArtistsClient({ artists }: { artists: any[] }) {
         </select>
       </div>
 
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-6 p-6">
+      <section className="grid grid-cols-2 md:grid-cols-4 gap-4 p-6">
         {filtered.map((artist: any) => (
           <Link key={artist.id} href={`/artist/${encodeURIComponent(artist.name)}`}
-            className="bg-[#ffe8cc] rounded-3xl overflow-hidden text-center hover:scale-105 transition-transform cursor-pointer shadow-md block group">
+            className="bg-[#ffe8cc] rounded-2xl overflow-hidden shadow-md hover:scale-105 transition-transform block group">
             
-            {/* תמונת זמר או רקע ברירת מחדל */}
-            {artist.imageId ? (
-              <div className="w-full h-32 overflow-hidden">
+            {/* תמונה מרובעת 1:1 */}
+            <div className="w-full aspect-square overflow-hidden bg-gradient-to-br from-[#FF512F]/20 to-[#DD2476]/20">
+              {artist.imageId ? (
                 <img
-                  src={`https://drive.google.com/thumbnail?id=${artist.imageId}&sz=w300`}
+                  src={`https://drive.google.com/thumbnail?id=${artist.imageId}&sz=w400`}
                   alt={artist.name}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = 'none';
-                  }}
+                  className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-300"
                 />
-              </div>
-            ) : (
-              <div className="w-full h-32 bg-gradient-to-br from-[#FF512F]/20 to-[#DD2476]/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <MicIcon size={48} color="#FF9FF3" />
-              </div>
-            )}
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <MicIcon size={56} color="#DD2476" />
+                </div>
+              )}
+            </div>
 
-            <div className="p-4">
-              <h3 className="font-bold text-lg text-[#DD2476]">{artist.name}</h3>
+            {/* שם */}
+            <div className="px-3 py-2 text-center">
+              <h3 className="font-black text-[#DD2476] text-sm leading-tight truncate">{artist.name}</h3>
             </div>
           </Link>
         ))}

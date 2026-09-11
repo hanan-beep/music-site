@@ -49,7 +49,7 @@ export default function ArtistsClient({ artists }: { artists: any[] }) {
             <div className="w-full aspect-square overflow-hidden bg-gradient-to-br from-[#FF512F]/20 to-[#DD2476]/20">
               {artist.imageId ? (
                 <img
-                  src={`https://drive.google.com/thumbnail?id=${artist.imageId}&sz=w400`}
+                  src={`https://drive.google.com/thumbnail?id=${artist.imageId}&sz=w600`}
                   alt={artist.name}
                   className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-300"
                 />

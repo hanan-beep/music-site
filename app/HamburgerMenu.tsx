@@ -2,18 +2,19 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { HomeIcon, MicIcon, AlbumIcon, MusicNoteIcon, HeartIcon, HistoryIcon, MailIcon, MenuIcon, CloseIcon } from './Icons';
+import { HomeIcon, MicIcon, AlbumIcon, MusicNoteIcon, HeartIcon, HistoryIcon, MailIcon, MenuIcon, CloseIcon, PlaylistIcon } from './Icons';
 
 export default function HamburgerMenu() {
   const [open, setOpen] = useState(false);
 
   const links = [
-    { href: '/',          icon: <HomeIcon size={24} color="#FFD700" />,         label: 'דף הבית' },
-    { href: '/artists',   icon: <MicIcon size={24} color="#FF9FF3" />,          label: 'זמרים' },
-    { href: '/albums',    icon: <AlbumIcon size={24} color="#54A0FF" />,        label: 'אלבומים' },
-    { href: '/songs',     icon: <MusicNoteIcon size={24} color="#5FF5A0" />,    label: 'שירים' },
-    { href: '/favorites', icon: <HeartIcon size={24} filled color="#FF6B9D" />, label: 'מועדפים' },
-    { href: '/history',   icon: <HistoryIcon size={24} color="#FFA502" />,      label: 'היסטוריית האזנה' },
+    { href: '/',          icon: <HomeIcon size={24} color="#FFD700" />,          label: 'דף הבית' },
+    { href: '/artists',   icon: <MicIcon size={24} color="#FF9FF3" />,           label: 'זמרים' },
+    { href: '/albums',    icon: <AlbumIcon size={24} color="#54A0FF" />,         label: 'אלבומים' },
+    { href: '/songs',     icon: <MusicNoteIcon size={24} color="#5FF5A0" />,     label: 'שירים' },
+    { href: '/favorites', icon: <HeartIcon size={24} filled color="#FF6B9D" />,  label: 'מועדפים' },
+    { href: '/playlist',  icon: <PlaylistIcon size={24} color="#FFA502" />,      label: 'הפלייליסט שלי' },
+    { href: '/history',   icon: <HistoryIcon size={24} color="#A29BFE" />,       label: 'היסטוריית האזנה' },
   ];
 
   return (

@@ -1,5 +1,5 @@
 // app/songs/page.tsx
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600; // cache שעה
 
 import SongsClient from './SongsClient';
 import { google } from 'googleapis';

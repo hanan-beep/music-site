@@ -34,17 +34,20 @@ export default async function ArtistPage({ params }: any) {
 
   const contents = await getFolderContents(artist.id);
   const folders = contents.filter((f: any) => f.mimeType === 'application/vnd.google-apps.folder');
-  const songs = contents.filter((f: any) => f.mimeType !== 'application/vnd.google-apps.folder');
-  
-  // תמונת הזמר
+  // שירים בלבד — ללא תמונות
+  const songs = contents.filter((f: any) =>
+    f.mimeType !== 'application/vnd.google-apps.folder' && !IMAGE_MIME.includes(f.mimeType)
+  );
+
+  // תמונת פרופיל לעיגול בכותרת בלבד
   const artistImage = contents.find((f: any) => IMAGE_MIME.includes(f.mimeType));
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#ffecd2] via-[#fcb69f] to-[#ffd1a9]" dir="rtl">
       <header className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] p-6 text-center shadow-2xl">
         <BackButton label="→ חזרה לזמרים" />
-        
-        {/* תמונה עגולה */}
+
+        {/* תמונה עגולה בכותרת בלבד */}
         <div className="flex justify-center mb-3">
           {artistImage ? (
             <img

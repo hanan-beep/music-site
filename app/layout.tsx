@@ -1,6 +1,6 @@
 // app/layout.tsx
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Rubik, Heebo } from "next/font/google";
 import "./globals.css";
 import HamburgerMenu from "./HamburgerMenu";
 import { PlayerProvider } from "./PlayerContext";
@@ -13,8 +13,8 @@ import GlobalSearch from "./GlobalSearch";
 import ServiceWorkerRegister from "./ServiceWorkerRegister";
 import Script from "next/script";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+const rubik = Rubik({ variable: "--font-display", subsets: ["hebrew", "latin"], weight: ["600", "800"] });
+const heebo = Heebo({ variable: "--font-body", subsets: ["hebrew", "latin"] });
 
 export const metadata: Metadata = {
   title: "יאללה שירים 💪",
@@ -27,7 +27,7 @@ export const viewport: Viewport = { themeColor: "#DD2476" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="he" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html lang="he" className={`${rubik.variable} ${heebo.variable} h-full antialiased`}>
       <head>
         <link rel="apple-touch-icon" href="/logo.png" />
         <Script src="https://www.googletagmanager.com/gtag/js?id=G-Y6JS9FP537" strategy="afterInteractive" />
@@ -38,7 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           gtag('config', 'G-Y6JS9FP537');
         `}</Script>
       </head>
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col pb-36">
         <ServiceWorkerRegister />
         <AuthProvider>
           <PlayerProvider>

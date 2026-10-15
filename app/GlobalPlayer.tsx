@@ -1,48 +1,84 @@
-// app/GlobalPlayer.tsx
 'use client';
+import { useEffect, useRef, useState } from 'react';
 import { usePlayer } from './PlayerContext';
 import { useHistory } from './HistoryContext';
-import { useEffect } from 'react';
 import { PrevIcon, NextIcon, CloseIcon } from './Icons';
+
+const BASE = process.env.NEXT_PUBLIC_STREAM_BASE || '';
+const src = (id: string) => `${BASE}/api/stream/${id}`;
+const clean = (n: string) => n.replace(/\.[^/.]+$/, '');
+const fmt = (s: number) => (isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '0:00');
 
 export default function GlobalPlayer() {
   const { songs, currentIndex, playIndex, close } = usePlayer();
   const { addToHistory } = useHistory();
-  const current = currentIndex >= 0 && songs.length > 0 ? songs[currentIndex] : null;
+  const audio = useRef<HTMLAudioElement>(null);
+  const preload = useRef<HTMLAudioElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const [time, setTime] = useState(0);
+  const [dur, setDur] = useState(0);
+  const [failed, setFailed] = useState(false);
+  const current = currentIndex >= 0 ? songs[currentIndex] : null;
+  const next = () => currentIndex < songs.length - 1 && playIndex(currentIndex + 1);
+  const prev = () => (time > 3 ? (audio.current!.currentTime = 0) : currentIndex > 0 && playIndex(currentIndex - 1));
 
   useEffect(() => {
-    if (current) addToHistory({ id: current.id, name: current.name, artistName: current.artistName, albumName: current.albumName });
+    if (!current || !audio.current) return;
+    setFailed(false); setTime(0);
+    audio.current.src = src(current.id);
+    audio.current.play().catch(() => {});
+    addToHistory({ id: current.id, name: current.name, artistName: current.artistName, albumName: current.albumName });
+    const nx = songs[currentIndex + 1];
+    if (preload.current && nx) preload.current.src = src(nx.id);
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: clean(current.name), artist: current.artistName || 'יאללה שירים', album: current.albumName || '',
+        artwork: [{ src: '/logo.png', sizes: '512x512', type: 'image/png' }],
+      });
+      navigator.mediaSession.setActionHandler('play', () => audio.current?.play());
+      navigator.mediaSession.setActionHandler('pause', () => audio.current?.pause());
+      navigator.mediaSession.setActionHandler('previoustrack', prev);
+      navigator.mediaSession.setActionHandler('nexttrack', next);
+    }
   }, [current?.id]);
 
   if (!current) return null;
+  const pct = dur ? (time / dur) * 100 : 0;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 w-full shadow-2xl" style={{ zIndex: 200 }}>
-      <div className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] px-4 py-3 flex items-center gap-3 w-full">
-        <button onClick={() => playIndex(currentIndex - 1)} disabled={currentIndex <= 0}
-          className="flex-shrink-0 flex items-center gap-1 bg-white/20 hover:bg-white/30 disabled:opacity-30 text-white font-black px-3 py-2 rounded-xl text-sm transition-colors">
-          <PrevIcon size={18} color="white" />
-          <span className="hidden sm:inline">קודם</span>
-        </button>
+    <div className="fixed inset-x-0 bottom-0 z-[200] p-3 sm:p-4 pointer-events-none">
+      <audio ref={audio} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)}
+        onTimeUpdate={e => setTime(e.currentTarget.currentTime)}
+        onLoadedMetadata={e => setDur(e.currentTarget.duration)}
+        onEnded={next} onError={() => { setFailed(true); setTimeout(next, 1500); }} />
+      <audio ref={preload} preload="auto" className="hidden" muted />
 
-        <div className="flex-1 text-center min-w-0">
-          <p className="font-black text-white truncate text-sm">{current.name.replace(/\.[^/.]+$/, '')}</p>
-          <p className="text-white/60 text-xs">{currentIndex + 1} / {songs.length}</p>
+      <div className="pointer-events-auto mx-auto max-w-3xl rounded-[28px] bg-[#1B1033]/95 backdrop-blur-xl text-white shadow-[0_20px_60px_-10px_rgba(221,36,118,.55)] ring-1 ring-white/10 overflow-hidden" dir="rtl">
+        <div className="flex items-center gap-3 px-4 pt-3 sm:px-5">
+          <div className={`disc ${playing ? 'spin' : ''}`}><img src="/logo.png" alt="" /></div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-display text-[15px] font-extrabold">{failed ? 'השיר לא נטען, עובר לבא…' : clean(current.name)}</p>
+            <p className="truncate text-xs text-white/55">{[current.artistName, current.albumName].filter(Boolean).join(' • ') || `${currentIndex + 1} מתוך ${songs.length}`}</p>
+          </div>
+          <div className={`eq ${playing ? 'on' : ''}`} aria-hidden><i /><i /><i /><i /></div>
+          <button onClick={close} aria-label="סגור נגן" className="p-2 text-white/50 hover:text-white"><CloseIcon size={18} color="currentColor" /></button>
         </div>
 
-        <button onClick={() => playIndex(currentIndex + 1)} disabled={currentIndex >= songs.length - 1}
-          className="flex-shrink-0 flex items-center gap-1 bg-white text-[#DD2476] font-black px-3 py-2 rounded-xl hover:bg-pink-50 disabled:opacity-30 shadow text-sm transition-colors">
-          <span className="hidden sm:inline">הבא</span>
-          <NextIcon size={18} color="#DD2476" />
-        </button>
-
-        <button onClick={close} className="flex-shrink-0 text-white hover:opacity-70">
-          <CloseIcon size={20} color="white" />
-        </button>
-      </div>
-      <div className="w-full bg-black" style={{ height: 80 }}>
-        <iframe key={current.id} src={`https://drive.google.com/file/d/${current.id}/preview`}
-          style={{ width: '100%', height: '80px', display: 'block', border: 'none' }} allow="autoplay" />
+        <div className="flex items-center gap-3 px-4 pb-3 pt-2 sm:px-5">
+          <span className="w-9 text-xs tabular-nums text-white/55" dir="ltr">{fmt(time)}</span>
+          <input dir="ltr" type="range" min={0} max={dur || 1} step={0.1} value={time} aria-label="התקדמות"
+            onChange={e => { audio.current!.currentTime = +e.target.value; }}
+            className="seek flex-1" style={{ ['--p' as string]: `${pct}%` }} />
+          <span className="w-9 text-left text-xs tabular-nums text-white/55" dir="ltr">{fmt(dur)}</span>
+          <button onClick={prev} aria-label="הקודם" className="p-2 hover:scale-110 transition-transform"><PrevIcon size={22} color="white" /></button>
+          <button onClick={() => (playing ? audio.current?.pause() : audio.current?.play())} aria-label={playing ? 'השהה' : 'נגן'}
+            className="grid h-12 w-12 place-items-center rounded-full bg-gradient-to-br from-[#FFC93C] via-[#FF512F] to-[#DD2476] shadow-lg active:scale-95 transition-transform">
+            {playing
+              ? <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><rect x="6" y="5" width="4" height="14" rx="1.5" /><rect x="14" y="5" width="4" height="14" rx="1.5" /></svg>
+              : <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z" /></svg>}
+          </button>
+          <button onClick={next} disabled={currentIndex >= songs.length - 1} aria-label="הבא" className="p-2 hover:scale-110 transition-transform disabled:opacity-30"><NextIcon size={22} color="white" /></button>
+        </div>
       </div>
     </div>
   );

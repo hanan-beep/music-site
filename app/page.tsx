@@ -2,58 +2,39 @@
 import Link from 'next/link';
 import { MicIcon, AlbumIcon, MusicNoteIcon } from './Icons';
 
+const tiles = [
+  { href: '/artists', title: 'זמרים', sub: 'דפדוף לפי שם הזמר', bg: 'bg-[#DD2476] text-white', icon: <MicIcon size={44} color="#FFC93C" />, wide: true },
+  { href: '/albums', title: 'אלבומים', sub: 'כל האלבומים המלאים', bg: 'bg-[#FFC93C] text-[#1B1033]', icon: <AlbumIcon size={44} color="#1B1033" /> },
+  { href: '/songs', title: 'שירים', sub: 'חיפוש בכל המאגר', bg: 'bg-[#1B1033] text-white', icon: <MusicNoteIcon size={44} color="#FF512F" /> },
+];
+
 export default function Home() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#ffecd2] via-[#fcb69f] to-[#ffd1a9] text-white" dir="rtl">
-      <header className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] p-6 text-center shadow-2xl">
-        <div className="flex items-center justify-center gap-4">
-          <img src="/logo.png" alt="לוגו" className="w-16 h-16 rounded-full" />
-          <h1 className="text-4xl font-black tracking-wide">יאללה שירים 💪</h1>
-        </div>
-        <p className="text-pink-100 mt-2 text-lg">הארכיון המוזיקלי החרדי הגדול ביותר</p>
+    <main className="min-h-screen" dir="rtl">
+      <header className="relative overflow-hidden bg-gradient-to-br from-[#FF512F] via-[#DD2476] to-[#7B2FF7] px-6 pb-20 pt-14 text-white sm:px-12">
+        <img src="/logo.png" alt="יאללה שירים" className="mb-8 h-16 w-16 rounded-full ring-4 ring-white/30" />
+        <h1 className="max-w-3xl text-5xl font-extrabold leading-[1.05] sm:text-7xl">כל השירים שאהבת, במקום אחד.</h1>
+        <p className="mt-5 max-w-xl text-lg text-white/85">הארכיון המוזיקלי החרדי הגדול ביותר. בוחרים זמר או אלבום, לוחצים, והמוזיקה ממשיכה לנגן גם כשעוברים בין דפים.</p>
+        <Link href="/songs" className="mt-8 inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 font-display text-lg font-extrabold text-[#DD2476] shadow-xl transition-transform hover:scale-105">
+          חיפוש שיר
+        </Link>
+        <div className="pointer-events-none absolute -bottom-24 -left-16 h-72 w-72 rounded-full bg-[#FFC93C]/40 blur-3xl" />
       </header>
 
-      <section className="text-center py-16 px-4">
-        <p className="text-[#DD2476] text-xl font-bold mb-2">ברוכים הבאים 🎶</p>
-        <h2 className="text-3xl font-black mb-4 text-gray-800">כל השירים במקום אחד</h2>
-        <p className="text-gray-500 text-lg max-w-xl mx-auto">
-          מאגר ענק של מוזיקה חרדית / דתית — לפי זמרים, אלבומים ואוספים
-        </p>
+      <section className="-mt-10 grid gap-4 px-4 sm:grid-cols-3 sm:px-12">
+        {tiles.map(t => (
+          <Link key={t.href} href={t.href}
+            className={`${t.bg} ${t.wide ? 'sm:col-span-2' : ''} group flex min-h-44 flex-col justify-between rounded-[32px] p-7 shadow-xl transition-transform hover:-translate-y-1`}>
+            <div className="transition-transform group-hover:rotate-6">{t.icon}</div>
+            <div>
+              <h2 className="text-3xl font-extrabold">{t.title}</h2>
+              <p className="mt-1 opacity-75">{t.sub}</p>
+            </div>
+          </Link>
+        ))}
       </section>
 
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6 px-8 pb-16">
-        <Link href="/songs"
-          className="bg-[#ffe8cc] rounded-3xl p-8 text-center hover:scale-105 transition-transform cursor-pointer block group">
-          <div className="flex justify-center mb-4 group-hover:scale-110 transition-transform">
-            <MusicNoteIcon size={52} color="#DD2476" />
-          </div>
-          <h3 className="text-xl font-bold text-[#DD2476]">שירים</h3>
-          <p className="text-gray-500 mt-2">כל השירים לחיפוש</p>
-        </Link>
-
-        <Link href="/albums"
-          className="bg-[#ffe8cc] rounded-3xl p-8 text-center hover:scale-105 transition-transform cursor-pointer block group">
-          <div className="flex justify-center mb-4 group-hover:scale-110 transition-transform">
-            <AlbumIcon size={52} color="#54A0FF" />
-          </div>
-          <h3 className="text-xl font-bold text-[#54A0FF]">אלבומים</h3>
-          <p className="text-gray-500 mt-2">כל האלבומים המלאים</p>
-        </Link>
-
-        <Link href="/artists"
-          className="bg-[#ffe8cc] rounded-3xl p-8 text-center hover:scale-105 transition-transform cursor-pointer block group">
-          <div className="flex justify-center mb-4 group-hover:scale-110 transition-transform">
-            <MicIcon size={52} color="#FF9FF3" />
-          </div>
-          <h3 className="text-xl font-bold text-[#a29bfe]">זמרים</h3>
-          <p className="text-gray-500 mt-2">דפדף לפי שם הזמר</p>
-        </Link>
-      </section>
-
-      <footer className="bg-[#ffe8cc] text-center py-6">
-        <p className="text-[#DD2476] font-bold tracking-widest">✨ ♩ ♪ ♫ ♬ יאללה שירים 💪 ♬ ♫ ♪ ♩ ✨</p>
-        <p className="text-gray-400 text-sm mt-2">© כל הזכויות שמורות | By Yael</p>
-      </footer>
+      <footer className="px-6 py-14 text-center text-sm text-[#1B1033]/60">© כל הזכויות שמורות | By Yael</footer>
     </main>
   );
 }

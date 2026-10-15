@@ -165,7 +165,7 @@ export default function SongsClient({ regularSongs, extraSongs }: { regularSongs
                   <PlayIcon size={14} color="white" />
                   <span className="hidden sm:inline">{isActive ? 'מנגן' : 'האזן'}</span>
                 </button>
-                <a href={`https://drive.google.com/uc?export=download&id=${song.id}`}
+                <a href={`/api/stream/${song.id}?download=1`}
                   onClick={e => e.stopPropagation()}
                   className="flex items-center gap-1 bg-[#FF512F] text-white px-3 py-2 rounded-xl text-sm font-black hover:opacity-80">
                   <DownloadIcon size={14} color="white" />

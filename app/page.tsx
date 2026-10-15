@@ -14,6 +14,8 @@ export default function Home() {
       <header className="relative flex flex-col items-center overflow-hidden bg-gradient-to-br from-[#FF512F] via-[#DD2476] to-[#7B2FF7] px-6 pb-24 pt-24 text-center text-white">
         <img src="/logo.png" alt="" className="h-24 w-24 rounded-full ring-4 ring-white/30 shadow-2xl" />
         <h1 className="mt-5 text-5xl font-extrabold sm:text-6xl">יאללה שירים</h1>
+        <p className="mt-3 text-xl font-semibold text-white/95">הארכיון המוזיקלי החרדי הגדול ביותר</p>
+        <p className="mt-2 max-w-md text-white/75">מאגר ענק של מוזיקה חרדית / דתית, לפי זמרים, אלבומים ואוספים</p>
         <div className="pointer-events-none absolute -bottom-24 -left-16 h-72 w-72 rounded-full bg-[#FFC93C]/40 blur-3xl" />
       </header>
 

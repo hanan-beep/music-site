@@ -25,7 +25,7 @@ export default function ArtistsClient({ artists }: { artists: any[] }) {
           <Link key={artist.id} href={`/artist/${encodeURIComponent(artist.name)}`}
             className="group relative block aspect-square overflow-hidden rounded-[28px] shadow-lg transition-transform duration-300 hover:-translate-y-1">
             {artist.imageId ? (
-              <img src={`https://drive.google.com/thumbnail?id=${artist.imageId}&sz=w600`} alt="" loading="lazy"
+              <img src={`/api/image/${artist.imageId}?w=600`} alt="" loading="lazy"
                 className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
             ) : (
               <div className={`grid h-full w-full place-items-center bg-gradient-to-br ${GRADS[i % GRADS.length]}`}>

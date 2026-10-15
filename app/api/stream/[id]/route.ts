@@ -31,6 +31,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     const v = up.headers.get(k);
     if (v) out.set(k, v);
   }
+  if (new URL(req.url).searchParams.get('download')) {
+    const m = await fetch(`https://www.googleapis.com/drive/v3/files/${id}?fields=name&supportsAllDrives=true`, { headers: { Authorization: headers.Authorization } })
+      .then(r => r.json()).catch(() => ({ name: 'song.mp3' }));
+    out.set('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(m.name || 'song.mp3')}`);
+  }
   const type = up.headers.get('content-type') || '';
   out.set('Content-Type', type.startsWith('audio/') ? type : 'audio/mpeg');
   return new Response(up.body, { status: up.status, headers: out });

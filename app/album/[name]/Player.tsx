@@ -18,9 +18,9 @@ function FileCard({ file, onPlay, isActive }: { file: any; onPlay: () => void; i
     }`}>
       {/* תצוגה מקדימה לתמונה */}
       {isImage && (
-        <a href={`https://drive.google.com/uc?export=view&id=${file.id}`} target="_blank" rel="noopener noreferrer">
+        <a href={`/api/image/${file.id}?w=1600`} target="_blank" rel="noopener noreferrer">
           <img
-            src={`https://drive.google.com/thumbnail?id=${file.id}&sz=w400`}
+            src={`/api/image/${file.id}?w=400`}
             alt={file.name}
             className="w-full h-40 object-cover"
           />
@@ -58,7 +58,7 @@ function FileCard({ file, onPlay, isActive }: { file: any; onPlay: () => void; i
               <PlayIcon size={14} color="white" />
               {isActive ? 'מנגן' : 'האזן'}
             </button>
-            <a href={`https://drive.google.com/uc?export=download&id=${file.id}`}
+            <a href={`/api/stream/${file.id}?download=1`}
               className="flex items-center gap-1.5 bg-[#FF512F] text-white px-3 py-2 rounded-full text-sm font-bold hover:opacity-80">
               <DownloadIcon size={14} color="white" />
               הורד
@@ -96,7 +96,7 @@ export default function Player({ songs, folderId, albumImage }: {
 
       {albumImage && (
         <div className="mb-6 flex justify-center">
-          <img src={`https://drive.google.com/thumbnail?id=${albumImage.id}&sz=w400`}
+          <img src={`/api/image/${albumImage.id}?w=400`}
             alt="תמונת אלבום" className="w-48 h-48 object-cover rounded-3xl shadow-xl border-4 border-white" />
         </div>
       )}

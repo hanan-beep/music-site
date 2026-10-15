@@ -141,7 +141,7 @@ export default function PlaylistPage() {
                       className={`flex items-center gap-1 px-3 py-2 rounded-xl text-sm font-black ${isActive ? 'bg-[#DD2476] text-white' : 'bg-[#DD2476] text-white hover:opacity-80'}`}>
                       <PlayIcon size={14} color="white" />
                     </button>
-                    <a href={`https://drive.google.com/uc?export=download&id=${song.id}`}
+                    <a href={`/api/stream/${song.id}?download=1`}
                       onClick={e => e.stopPropagation()}
                       className="flex items-center gap-1 bg-[#FF512F] text-white px-3 py-2 rounded-xl text-sm font-black hover:opacity-80">
                       <DownloadIcon size={14} color="white" />

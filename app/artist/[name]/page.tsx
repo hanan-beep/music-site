@@ -51,7 +51,7 @@ export default async function ArtistPage({ params }: any) {
         <div className="flex justify-center mb-3">
           {artistImage ? (
             <img
-              src={`https://drive.google.com/thumbnail?id=${artistImage.id}&sz=w300`}
+              src={`/api/image/${artistImage.id}?w=300`}
               alt={artistName}
               className="w-24 h-24 rounded-full object-cover object-center border-4 border-white shadow-xl"
             />

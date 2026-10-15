@@ -59,7 +59,7 @@ export default function GlobalSearch() {
     <>
       {/* כפתור חיפוש */}
       <button onClick={() => setOpen(true)}
-        className="fixed top-4 right-16 z-50 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl p-2.5 shadow-lg hover:bg-white/30 transition-all">
+        className="fixed top-4 right-16 z-50 bg-[#1B1033]/85 backdrop-blur-md border border-white/20 rounded-xl p-2.5 shadow-lg hover:bg-[#1B1033] transition-all">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
           <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
         </svg>

@@ -20,7 +20,7 @@ export default function HamburgerMenu() {
   return (
     <>
       <button onClick={() => setOpen(true)} aria-label="פתח תפריט"
-        className="fixed top-4 left-4 z-50 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl p-2.5 shadow-lg hover:bg-white/30 transition-all">
+        className="fixed top-4 left-4 z-50 bg-[#1B1033]/85 backdrop-blur-md border border-white/20 rounded-xl p-2.5 shadow-lg hover:bg-[#1B1033] transition-all">
         <MenuIcon size={22} color="white" />
       </button>
 

@@ -11,13 +11,9 @@ const tiles = [
 export default function Home() {
   return (
     <main className="min-h-screen" dir="rtl">
-      <header className="relative overflow-hidden bg-gradient-to-br from-[#FF512F] via-[#DD2476] to-[#7B2FF7] px-6 pb-24 pt-24 text-white sm:px-12">
-        <img src="/logo.png" alt="יאללה שירים" className="mb-8 h-16 w-16 rounded-full ring-4 ring-white/30" />
-        <h1 className="max-w-3xl text-5xl font-extrabold leading-[1.05] sm:text-7xl">כל השירים שאהבת, במקום אחד.</h1>
-        <p className="mt-5 max-w-xl text-lg text-white/85">הארכיון המוזיקלי החרדי הגדול ביותר. בוחרים זמר או אלבום, לוחצים, והמוזיקה ממשיכה לנגן גם כשעוברים בין דפים.</p>
-        <Link href="/songs" className="mt-8 inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 font-display text-lg font-extrabold text-[#DD2476] shadow-xl transition-transform hover:scale-105">
-          חיפוש שיר
-        </Link>
+      <header className="relative flex flex-col items-center overflow-hidden bg-gradient-to-br from-[#FF512F] via-[#DD2476] to-[#7B2FF7] px-6 pb-24 pt-24 text-center text-white">
+        <img src="/logo.png" alt="" className="h-24 w-24 rounded-full ring-4 ring-white/30 shadow-2xl" />
+        <h1 className="mt-5 text-5xl font-extrabold sm:text-6xl">יאללה שירים</h1>
         <div className="pointer-events-none absolute -bottom-24 -left-16 h-72 w-72 rounded-full bg-[#FFC93C]/40 blur-3xl" />
       </header>
 

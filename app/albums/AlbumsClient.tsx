@@ -2,73 +2,47 @@
 'use client';
 import Link from 'next/link';
 import { useState, useMemo } from 'react';
-import { AlbumIcon, MicIcon, SearchIcon } from '@/app/Icons';
+import PageHeader from '@/app/PageHeader';
 import AlbumFavButton from '@/app/AlbumFavButton';
+
+const COLORS = [['#FF512F', '#DD2476'], ['#7B2FF7', '#54A0FF'], ['#FFC93C', '#FF512F'], ['#1B1033', '#7B2FF7'], ['#54A0FF', '#5FF5A0']];
+const hash = (s: string) => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
 
 export default function AlbumsClient({ albums }: { albums: any[] }) {
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<'alpha-asc' | 'alpha-desc'>('alpha-asc');
 
   const filtered = useMemo(() => {
-    let list = albums.filter(a =>
-      a.name.toLowerCase().includes(search.toLowerCase()) ||
-      a.artistName.toLowerCase().includes(search.toLowerCase())
-    );
-    return [...list].sort((a, b) =>
-      sort === 'alpha-asc' ? a.name.localeCompare(b.name, 'he') : b.name.localeCompare(a.name, 'he')
-    );
+    const q = search.toLowerCase();
+    const list = albums.filter(a => a.name.toLowerCase().includes(q) || a.artistName.toLowerCase().includes(q));
+    return [...list].sort((a, b) => (sort === 'alpha-asc' ? 1 : -1) * a.name.localeCompare(b.name, 'he'));
   }, [albums, search, sort]);
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#ffecd2] via-[#fcb69f] to-[#ffd1a9] text-gray-800" dir="rtl">
-      <header className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] p-6 text-center shadow-2xl">
-        <Link href="/" className="text-white text-sm mb-2 block">→ חזרה לדף הבית</Link>
-        <h1 className="text-3xl font-black text-white flex items-center justify-center gap-3">
-          <AlbumIcon size={32} color="white" /> אלבומים
-        </h1>
-      </header>
+    <main className="min-h-screen" dir="rtl">
+      <PageHeader title="אלבומים" count={filtered.length} unit="אלבומים" placeholder="חיפוש אלבום או זמר..."
+        search={search} setSearch={setSearch} sort={sort} setSort={setSort} />
 
-      <div className="px-6 pt-6 pb-2 flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <input type="text" placeholder="חיפוש אלבום או זמר..." value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full rounded-2xl pr-12 pl-4 py-3 border-2 border-[#DD2476]/30 bg-white/80 text-gray-800 font-bold placeholder-gray-400 focus:outline-none focus:border-[#DD2476] shadow" />
-          <div className="absolute right-4 top-1/2 -translate-y-1/2">
-            <SearchIcon size={20} color="#DD2476" />
-          </div>
-        </div>
-        <select value={sort} onChange={e => setSort(e.target.value as any)}
-          className="rounded-2xl px-4 py-3 border-2 border-[#DD2476]/30 bg-white/80 text-gray-800 font-bold focus:outline-none focus:border-[#DD2476] shadow">
-          <option value="alpha-asc">א ← ת</option>
-          <option value="alpha-desc">ת ← א</option>
-        </select>
-      </div>
-
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-6 p-6">
-        {filtered.map((album: any) => (
-          <div key={album.id} className="relative">
-            <Link href={`/album/${album.id}?name=${encodeURIComponent(album.name)}`}
-              className="bg-[#ffe8cc] rounded-3xl p-5 text-center hover:scale-105 transition-transform cursor-pointer shadow-md block group">
-              <div className="flex justify-center mb-2 group-hover:scale-110 transition-transform">
-                <AlbumIcon size={44} color="#54A0FF" />
-              </div>
-              <h3 className="font-bold text-[#DD2476] leading-tight">{album.name}</h3>
-              <p className="text-gray-500 text-sm mt-1 flex items-center justify-center gap-1">
-                <MicIcon size={12} color="#999" />{album.artistName}
-              </p>
-            </Link>
-            <AlbumFavButton album={{ id: album.id, name: album.name, artistName: album.artistName }} />
-          </div>
-        ))}
-        {filtered.length === 0 && (
-          <p className="col-span-4 text-center text-gray-500 py-10">לא נמצאו תוצאות</p>
-        )}
+      <section className="mx-auto grid max-w-6xl grid-cols-2 gap-5 p-5 sm:grid-cols-3 sm:gap-6 sm:p-8 lg:grid-cols-4">
+        {filtered.map((album: any) => {
+          const [c1, c2] = COLORS[hash(album.name) % COLORS.length];
+          return (
+            <div key={album.id} className="relative">
+              <Link href={`/album/${album.id}?name=${encodeURIComponent(album.name)}`} className="group block">
+                <div className="relative aspect-square overflow-hidden rounded-[28px] shadow-lg transition-transform duration-300 group-hover:-translate-y-1"
+                  style={{ background: `linear-gradient(135deg, ${c1}, ${c2})` }}>
+                  <div className="absolute -left-[18%] top-1/2 h-[85%] w-[85%] -translate-y-1/2 rounded-full bg-[#1B1033] shadow-2xl transition-transform duration-500 group-hover:translate-x-3"
+                    style={{ background: 'radial-gradient(circle, #FFC93C 0 9%, #1B1033 10% 38%, #2b1d4d 39% 40%, #1B1033 41% 62%, #2b1d4d 63% 64%, #1B1033 65%)' }} />
+                </div>
+                <h3 className="mt-3 line-clamp-2 font-display text-[15px] font-extrabold leading-snug">{album.name}</h3>
+                <p className="mt-0.5 truncate text-sm text-[#1B1033]/55">{album.artistName}</p>
+              </Link>
+              <AlbumFavButton album={{ id: album.id, name: album.name, artistName: album.artistName }} />
+            </div>
+          );
+        })}
+        {filtered.length === 0 && <p className="col-span-full py-16 text-center text-[#1B1033]/60">לא נמצא אלבום. נסי לחפש חלק מהשם או שם זמר.</p>}
       </section>
-
-      <footer className="bg-[#ffe8cc] text-center py-6 mt-8">
-        <p className="text-[#DD2476] font-bold">✨ ♩ ♪ ♫ ♬ יאללה שירים 💪 ♬ ♫ ♪ ♩ ✨</p>
-        <p className="text-gray-500 text-sm mt-2">© כל הזכויות שמורות | By Yael</p>
-      </footer>
     </main>
   );
 }

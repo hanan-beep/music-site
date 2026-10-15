@@ -1,5 +1,6 @@
 import { google } from 'googleapis';
 export const dynamic = 'force-dynamic';
+export const preferredRegion = 'fra1'; // פרנקפורט — הכי קרוב לישראל
 
 const auth = new google.auth.GoogleAuth({
   credentials: {

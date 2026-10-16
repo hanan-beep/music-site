@@ -1,6 +1,7 @@
 // app/api/all-songs/route.ts
 // שולף את כל השירים מכל הזמרים — בצד השרת, מהיר
 import { google } from 'googleapis';
+import { getAllSongs } from '@/lib/catalog';
 
 const auth = new google.auth.GoogleAuth({
   credentials: {
@@ -26,6 +27,8 @@ async function listFolder(folderId: string, drive: any) {
 }
 
 export async function GET() {
+  const cat = await getAllSongs();
+  if (cat.length) return Response.json(cat);
   try {
     const drive = google.drive({ version: 'v3', auth });
 

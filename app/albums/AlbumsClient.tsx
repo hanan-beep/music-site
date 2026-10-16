@@ -31,7 +31,8 @@ export default function AlbumsClient({ albums }: { albums: any[] }) {
               <Link href={`/album/${album.id}?name=${encodeURIComponent(album.name)}`} className="group block">
                 <div className="relative aspect-square overflow-hidden rounded-[28px] shadow-lg transition-transform duration-300 group-hover:-translate-y-1"
                   style={{ background: `linear-gradient(135deg, ${c1}, ${c2})` }}>
-                  <div className="absolute -left-[18%] top-1/2 h-[85%] w-[85%] -translate-y-1/2 rounded-full bg-[#1B1033] shadow-2xl transition-transform duration-500 group-hover:translate-x-3"
+                  {album.coverId && <img src={`/api/image/${album.coverId}?w=500`} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />}
+                  <div className={`${album.coverId ? 'hidden ' : ''}absolute -left-[18%] top-1/2 h-[85%] w-[85%] -translate-y-1/2 rounded-full bg-[#1B1033] shadow-2xl transition-transform duration-500 group-hover:translate-x-3`}
                     style={{ background: 'radial-gradient(circle, #FFC93C 0 9%, #1B1033 10% 38%, #2b1d4d 39% 40%, #1B1033 41% 62%, #2b1d4d 63% 64%, #1B1033 65%)' }} />
                 </div>
                 <h3 className="mt-3 line-clamp-2 font-display text-[15px] font-extrabold leading-snug">{album.name}</h3>

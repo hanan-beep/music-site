@@ -1,5 +1,8 @@
 // app/albums/page.tsx — SERVER COMPONENT
 import AlbumsClient from './AlbumsClient';
+import { getAlbums } from '@/lib/catalog';
+
+export const revalidate = 300;
 
 async function getAllAlbums() {
   const BASE = 'https://music-site-flame.vercel.app/api/drive';
@@ -25,6 +28,8 @@ async function getAllAlbums() {
 }
 
 export default async function Albums() {
+  const cat = await getAlbums();
+  if (cat.length) return <AlbumsClient albums={cat} />;
   const albums = await getAllAlbums();
   return <AlbumsClient albums={albums} />;
 }

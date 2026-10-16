@@ -1,5 +1,8 @@
 // app/artists/page.tsx — SERVER COMPONENT
 import ArtistsClient from './ArtistsClient';
+import { getArtists } from '@/lib/catalog';
+
+export const revalidate = 300;
 
 const IMAGE_MIME = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/jpg'];
 
@@ -26,6 +29,8 @@ async function getArtists() {
 }
 
 export default async function Artists() {
+  const cat = await getArtists();
+  if (cat.length) return <ArtistsClient artists={cat} />;
   const artists = await getArtists();
   return <ArtistsClient artists={artists} />;
 }

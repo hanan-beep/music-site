@@ -33,6 +33,8 @@ export default function GlobalPlayer() {
   const [shuffle, setShuffle] = useState(false);
   const [repeat, setRepeat] = useState<Repeat>('off');
   const current = currentIndex >= 0 ? songs[currentIndex] : null;
+  const [art, setArt] = useState('/logo.png');
+  const isLogo = art === '/logo.png';
 
   const advance = (auto = false) => {
     if (auto && repeat === 'one') { audio.current!.currentTime = 0; audio.current!.play(); return; }
@@ -75,6 +77,32 @@ export default function GlobalPlayer() {
       navigator.mediaSession.setActionHandler('nexttrack', () => fns.current.advance());
     }
   }, [current?.id]);
+
+  useEffect(() => {
+    if (!current) return;
+    let dead = false;
+    setArt('/logo.png');
+    const chain = [`/api/cover/${current.id}`, ...(current.coverId ? [`/api/image/${current.coverId}?w=700`] : [])];
+    (async () => {
+      for (const u of chain) {
+        const ok = await new Promise<boolean>(res => { const im = new Image(); im.onload = () => res(true); im.onerror = () => res(false); im.src = u; });
+        if (dead) return;
+        if (ok) { setArt(u); return; }
+      }
+    })();
+    return () => { dead = true; };
+  }, [current?.id, current?.coverId]);
+
+  useEffect(() => {
+    try {
+      if ('mediaSession' in navigator && navigator.mediaSession.metadata && current) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: clean(current.name), artist: current.artistName || 'יאללה שירים', album: current.albumName || '',
+          artwork: [{ src: new URL(art, location.href).href }],
+        });
+      }
+    } catch {}
+  }, [art]);
 
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : '';
@@ -121,7 +149,7 @@ export default function GlobalPlayer() {
           <div className="pointer-events-auto mx-auto max-w-3xl overflow-hidden rounded-[28px] bg-[#1B1033]/95 text-white shadow-[0_20px_60px_-10px_rgba(221,36,118,.55)] ring-1 ring-white/10 backdrop-blur-xl" dir="rtl">
             <div className="flex items-center gap-3 px-4 pt-3 sm:px-5">
               <button onClick={() => setOpen(true)} aria-label="פתח נגן מלא" className="flex min-w-0 flex-1 items-center gap-3 text-right">
-                <div className={`disc ${playing ? 'spin' : ''}`}><img src="/logo.png" alt="" /></div>
+                <div className={`disc ${playing ? 'spin' : ''}`}><img src={art} alt="" /></div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-display text-[15px] font-extrabold">{failed ? 'השיר לא נטען, עובר לבא…' : clean(current.name)}</p>
                   <p className="truncate text-xs text-white/55">{[current.artistName, current.albumName].filter(Boolean).join(' • ') || `${currentIndex + 1} מתוך ${songs.length}`}</p>
@@ -132,10 +160,10 @@ export default function GlobalPlayer() {
               <button onClick={close} aria-label="סגור נגן" className="p-2 text-white/50 hover:text-white"><CloseIcon size={18} color="currentColor" /></button>
             </div>
             <div className="flex items-center gap-3 px-4 pb-3 pt-2 sm:px-5">
-              <div className="flex-1"><Seek /></div>
+              <div className="flex-1">{Seek()}</div>
               <div dir="ltr" className="flex items-center gap-1">
                 <button onClick={back} aria-label="הקודם" className="p-2 transition-transform hover:scale-110"><PrevIcon size={22} color="white" /></button>
-                <PlayBtn size={48} />
+                {PlayBtn({ size: 48 })}
                 <button onClick={() => advance()} disabled={noNext} aria-label="הבא" className="p-2 transition-transform hover:scale-110 disabled:opacity-30"><NextIcon size={22} color="white" /></button>
               </div>
             </div>
@@ -153,20 +181,20 @@ export default function GlobalPlayer() {
             </div>
 
             <div className="my-8 grid place-items-center">
-              {current.coverId
-                ? <img src={`/api/image/${current.coverId}?w=700`} alt="" className="aspect-square w-64 rounded-[32px] object-cover shadow-[0_30px_70px_-15px_rgba(221,36,118,.6)]" />
-                : <div className={`disc ${playing ? 'spin' : ''}`} style={{ width: 256, height: 256, padding: 10, boxShadow: '0 30px 70px -15px rgba(221,36,118,.6)' }}><img src="/logo.png" alt="" /></div>}
+              {!isLogo
+                ? <img src={art} alt="" className="aspect-square w-64 rounded-[32px] object-cover shadow-[0_30px_70px_-15px_rgba(221,36,118,.6)]" />
+                : <div className={`disc ${playing ? 'spin' : ''}`} style={{ width: 256, height: 256, padding: 10, boxShadow: '0 30px 70px -15px rgba(221,36,118,.6)' }}><img src={art} alt="" /></div>}
             </div>
 
             <h2 className="font-display text-2xl font-extrabold leading-snug">{clean(current.name)}</h2>
             <p className="mt-1 text-white/60">{[current.artistName, current.albumName].filter(Boolean).join(' • ')}</p>
 
-            <div className="mt-6"><Seek /></div>
+            <div className="mt-6">{Seek()}</div>
 
             <div dir="ltr" className="mt-4 flex items-center justify-between">
               <button onClick={() => { setShuffle(s => !s); played.current = []; }} aria-label="ערבוב" aria-pressed={shuffle} className="p-2.5"><ShuffleIcon color={shuffle ? '#FFC93C' : 'rgba(255,255,255,.55)'} /></button>
               <button onClick={back} aria-label="הקודם" className="p-2.5"><PrevIcon size={28} color="white" /></button>
-              <PlayBtn size={68} />
+              {PlayBtn({ size: 68 })}
               <button onClick={() => advance()} disabled={noNext} aria-label="הבא" className="p-2.5 disabled:opacity-30"><NextIcon size={28} color="white" /></button>
               <button onClick={cycleRepeat} aria-label="חזרה" className="p-2.5"><RepeatIcon one={repeat === 'one'} color={repeat === 'off' ? 'rgba(255,255,255,.55)' : '#FFC93C'} /></button>
             </div>

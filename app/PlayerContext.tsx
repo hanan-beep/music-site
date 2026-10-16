@@ -2,13 +2,16 @@
 'use client';
 import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 
-type Song = { id: string; name: string; artistName?: string; albumName?: string };
+type Song = { id: string; name: string; artistName?: string; albumName?: string; coverId?: string };
 type PlayerCtx = {
   songs: Song[];
   currentIndex: number;
   play: (songs: Song[], index: number) => void;
   playIndex: (index: number) => void;
   close: () => void;
+  enqueue: (song: Song) => void;
+  playNext: (song: Song) => void;
+  removeAt: (index: number) => void;
 };
 
 const Ctx = createContext<PlayerCtx | null>(null);
@@ -64,8 +67,23 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     try { localStorage.removeItem(LS_KEY); } catch {}
   }, []);
 
+  const enqueue = useCallback((song: Song) => {
+    if (currentIndex < 0) { setSongs([song]); setCurrentIndex(0); }
+    else setSongs(p => [...p, song]);
+  }, [currentIndex]);
+
+  const playNext = useCallback((song: Song) => {
+    if (currentIndex < 0) { setSongs([song]); setCurrentIndex(0); return; }
+    setSongs(p => { const n = [...p]; n.splice(currentIndex + 1, 0, song); return n; });
+  }, [currentIndex]);
+
+  const removeAt = useCallback((i: number) => {
+    setSongs(p => p.filter((_, k) => k !== i));
+    setCurrentIndex(c => (i < c ? c - 1 : c));
+  }, []);
+
   return (
-    <Ctx.Provider value={{ songs, currentIndex, play, playIndex, close }}>
+    <Ctx.Provider value={{ songs, currentIndex, play, playIndex, close, enqueue, playNext, removeAt }}>
       {children}
     </Ctx.Provider>
   );

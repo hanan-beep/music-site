@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { usePlayer } from './PlayerContext';
 import { useHistory } from './HistoryContext';
 import { PrevIcon, NextIcon, CloseIcon } from './Icons';
+import FavButton from './FavButton';
 
 const BASE = process.env.NEXT_PUBLIC_STREAM_BASE || '';
 const src = (id: string) => `${BASE}/api/stream/${id}`;
@@ -62,6 +63,7 @@ export default function GlobalPlayer() {
             <p className="truncate text-xs text-white/55">{[current.artistName, current.albumName].filter(Boolean).join(' • ') || `${currentIndex + 1} מתוך ${songs.length}`}</p>
           </div>
           <div className={`eq ${playing ? 'on' : ''}`} aria-hidden><i /><i /><i /><i /></div>
+          <FavButton song={{ id: current.id, name: current.name, artistName: current.artistName, albumName: current.albumName }} />
           <button onClick={close} aria-label="סגור נגן" className="p-2 text-white/50 hover:text-white"><CloseIcon size={18} color="currentColor" /></button>
         </div>
 

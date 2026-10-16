@@ -1,6 +1,6 @@
 // app/artists/page.tsx — SERVER COMPONENT
 import ArtistsClient from './ArtistsClient';
-import { getArtists } from '@/lib/catalog';
+import { getArtists as getCatalogArtists } from '@/lib/catalog';
 
 export const revalidate = 300;
 
@@ -29,7 +29,7 @@ async function getArtists() {
 }
 
 export default async function Artists() {
-  const cat = await getArtists();
+  const cat = await getCatalogArtists();
   if (cat.length) return <ArtistsClient artists={cat} />;
   const artists = await getArtists();
   return <ArtistsClient artists={artists} />;

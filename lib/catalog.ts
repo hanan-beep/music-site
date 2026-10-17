@@ -33,3 +33,23 @@ export async function getAllSongs() {
   return (await all('songs', 'id,name,artist_id,artist_name,album_name,created_at', 'name'))
     .map(s => ({ id: s.id, name: s.name, artistId: s.artist_id, artistName: s.artist_name, albumName: s.album_name, createdAt: s.created_at }));
 }
+
+export async function getArtistCatalog(artistId: string) {
+  const empty = { albums: [] as { id: string; name: string; coverId?: string }[], songs: [] as any[] };
+  const db = catalogDb();
+  if (!db) return empty;
+  try {
+    const [al, so] = await Promise.all([
+      db.from('albums').select('id,name,cover_id').eq('artist_id', artistId),
+      db.from('songs').select('id,name,artist_name,album_id,album_name').eq('artist_id', artistId).order('album_name').order('name').range(0, 999),
+    ]);
+    const covers = new Map<string, string | null>((al.data || []).map((a: any): [string, string | null] => [a.id, a.cover_id]));
+    return {
+      albums: (al.data || []).map((a: any) => ({ id: a.id, name: a.name, coverId: a.cover_id || undefined })),
+      songs: (so.data || []).map((x: any) => ({
+        id: x.id, name: x.name, artistName: x.artist_name, albumName: x.album_name,
+        coverId: (x.album_id && covers.get(x.album_id)) || undefined,
+      })),
+    };
+  } catch { return empty; }
+}

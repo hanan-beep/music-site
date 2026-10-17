@@ -6,7 +6,7 @@ export default function BackButton({ label = '→ חזרה' }: { label?: string 
   const router = useRouter();
   return (
     <button onClick={() => router.back()}
-      className="text-white text-sm mb-2 block mx-auto hover:opacity-70 transition-opacity">
+      className="block text-sm text-white/85 transition-opacity hover:opacity-70">
       {label}
     </button>
   );

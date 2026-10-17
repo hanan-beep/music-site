@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import BackButton from '@/app/BackButton';
+import PageHero from '@/app/PageHero';
 
 type Status = 'idle' | 'loading' | 'success' | 'error';
 
@@ -41,15 +41,11 @@ export default function Contact() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#ffecd2] via-[#fcb69f] to-[#ffd1a9]" dir="rtl">
-      <header className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] p-6 text-center shadow-2xl">
-        <BackButton />
-        <h1 className="text-3xl font-black text-white">✉️ צור קשר</h1>
-      </header>
+    <main className="min-h-screen" dir="rtl">
+      <PageHero title="צור קשר" />
 
-      <div className="max-w-2xl mx-auto px-6 py-12 flex flex-col gap-6">
-        <div className="bg-white/70 rounded-3xl p-8 shadow-lg text-gray-700 leading-relaxed text-center">
-          <p className="text-3xl mb-4">🎵</p>
+      <div className="max-w-2xl mx-auto px-4 py-8 flex flex-col gap-6">
+        <div className="bg-white rounded-[28px] p-7 sm:p-8 shadow-lg text-gray-700 leading-relaxed text-center">
           <h2 className="text-2xl font-black text-[#DD2476] mb-6">חסר לכם איזה ביט?</h2>
           <p className="text-lg mb-4">חרשנו את כל המאגרים כדי שלא יחסר לכם כלום, אבל תמיד יש את השיר הזה שמתחבא...</p>
           <p className="text-lg mb-4">אז אם חסר פה איזה זמר שאתם אוהבים, שיר שנתקע לכם בראש, או שמצאתם איזו טעות – אל תשמרו בבטן!</p>
@@ -58,7 +54,7 @@ export default function Contact() {
           <p className="text-xl font-black text-[#DD2476]">מחכים לשמוע מכם! 💪</p>
         </div>
 
-        <div className="bg-white/70 rounded-3xl p-8 shadow-lg flex flex-col gap-4">
+        <div className="bg-white rounded-[28px] p-7 sm:p-8 shadow-lg flex flex-col gap-4">
           {status === 'success' ? (
             <div className="text-center py-6 flex flex-col gap-4">
               <p className="text-5xl">🎉</p>
@@ -73,13 +69,13 @@ export default function Contact() {
             <>
               <input type="text" placeholder="השם שלך (אופציונלי)" value={name}
                 onChange={e => setName(e.target.value)} disabled={status === 'loading'}
-                className="rounded-2xl px-4 py-3 border-2 border-[#DD2476]/30 bg-white text-gray-800 font-bold placeholder-gray-400 focus:outline-none focus:border-[#DD2476] disabled:opacity-50" />
+                className="rounded-2xl px-4 py-3.5 bg-[#FFF3EA] text-[#1B1033] font-semibold placeholder-[#1B1033]/40 ring-1 ring-black/5 focus:outline-none focus:ring-2 focus:ring-[#DD2476] disabled:opacity-50" />
               <input type="email" placeholder="המייל שלך *" value={email}
                 onChange={e => setEmail(e.target.value)} disabled={status === 'loading'}
-                className="rounded-2xl px-4 py-3 border-2 border-[#DD2476]/30 bg-white text-gray-800 font-bold placeholder-gray-400 focus:outline-none focus:border-[#DD2476] disabled:opacity-50" />
+                className="rounded-2xl px-4 py-3.5 bg-[#FFF3EA] text-[#1B1033] font-semibold placeholder-[#1B1033]/40 ring-1 ring-black/5 focus:outline-none focus:ring-2 focus:ring-[#DD2476] disabled:opacity-50" />
               <textarea placeholder="מה תרצו לכתוב? *" value={message}
                 onChange={e => setMessage(e.target.value)} disabled={status === 'loading'} rows={4}
-                className="rounded-2xl px-4 py-3 border-2 border-[#DD2476]/30 bg-white text-gray-800 font-bold placeholder-gray-400 focus:outline-none focus:border-[#DD2476] resize-none disabled:opacity-50" />
+                className="rounded-2xl px-4 py-3.5 bg-[#FFF3EA] text-[#1B1033] font-semibold placeholder-[#1B1033]/40 ring-1 ring-black/5 focus:outline-none focus:ring-2 focus:ring-[#DD2476] resize-none disabled:opacity-50" />
               {errorMsg && <p className="text-red-500 font-bold text-center">⚠️ {errorMsg}</p>}
               <button onClick={handleSend} disabled={status === 'loading'}
                 className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] text-white font-black text-lg px-8 py-4 rounded-2xl hover:scale-105 transition-transform shadow-lg disabled:opacity-60 disabled:scale-100">
@@ -90,10 +86,7 @@ export default function Contact() {
         </div>
       </div>
 
-      <footer className="bg-[#ffe8cc] text-center py-6 mt-8">
-        <p className="text-[#DD2476] font-bold">✨ ♩ ♪ ♫ ♬ יאללה שירים 💪 ♬ ♫ ♪ ♩ ✨</p>
-        <p className="text-gray-500 text-sm mt-2">© כל הזכויות שמורות | By Yael</p>
-      </footer>
+      <footer className="px-6 pb-10 pt-4 text-center text-sm text-[#1B1033]/50">© כל הזכויות שמורות | By Yael</footer>
     </main>
   );
 }

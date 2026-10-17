@@ -1,6 +1,8 @@
 // app/page.tsx
 import Link from 'next/link';
 import { MicIcon, AlbumIcon, MusicNoteIcon } from './Icons';
+import { getRecentSongs } from '@/lib/catalog';
+import { RecentRow, HistoryRow } from './HomeRows';
 
 const tiles = [
   { href: '/artists', title: 'זמרים', sub: 'דפדוף לפי שם הזמר', bg: 'bg-[#DD2476] text-white', icon: <MicIcon size={44} color="#FFC93C" />, wide: true },
@@ -8,7 +10,12 @@ const tiles = [
   { href: '/songs', title: 'שירים', sub: 'חיפוש בכל המאגר', bg: 'bg-[#1B1033] text-white', icon: <MusicNoteIcon size={44} color="#FF512F" />, full: true },
 ];
 
-export default function Home() {
+export const revalidate = 300;
+
+export default async function Home() {
+  const recent = (await getRecentSongs(12)).map(s => ({
+    ...s, isNew: !!s.createdAt && Date.now() - new Date(s.createdAt).getTime() < 14 * 86400000,
+  }));
   return (
     <main className="min-h-screen" dir="rtl">
       <header className="relative flex flex-col items-center overflow-hidden bg-gradient-to-br from-[#FF512F] via-[#DD2476] to-[#7B2FF7] px-6 pb-24 pt-24 text-center text-white">
@@ -31,6 +38,9 @@ export default function Home() {
           </Link>
         ))}
       </section>
+
+      <RecentRow songs={recent} />
+      <HistoryRow />
 
       <footer className="px-6 pb-10 pt-14 text-center text-sm text-[#1B1033]/60">© כל הזכויות שמורות | By Yael</footer>
     </main>

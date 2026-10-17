@@ -1,122 +1,81 @@
-// app/album/[name]/Player.tsx
+// app/album/[name]/Player.tsx — רשימת שירים וקבצים של אלבום / זמר
 'use client';
+import { useState } from 'react';
 import { usePlayer } from '@/app/PlayerContext';
 import FavButton from '@/app/FavButton';
-import { PlayIcon, DownloadIcon, FolderIcon } from '@/app/Icons';
+import { PlayIcon } from '@/app/Icons';
 
 const IMAGE_MIME = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/jpg'];
-const PDF_MIME = ['application/pdf'];
+const isImg = (f: any) => IMAGE_MIME.includes(f.mimeType);
+const isPdf = (f: any) => f.mimeType === 'application/pdf';
 
-function FileCard({ file, onPlay, isActive }: { file: any; onPlay: () => void; isActive: boolean }) {
-  const isImage = IMAGE_MIME.includes(file.mimeType);
-  const isPdf = PDF_MIME.includes(file.mimeType);
-  const isMedia = !isImage && !isPdf;
-
-  return (
-    <div className={`rounded-2xl overflow-hidden shadow-md border-2 transition-all duration-200 ${
-      isActive ? 'border-[#DD2476] scale-[1.01]' : 'border-transparent'
-    }`}>
-      {/* תצוגה מקדימה לתמונה */}
-      {isImage && (
-        <a href={`/api/image/${file.id}?w=1600`} target="_blank" rel="noopener noreferrer">
-          <img
-            src={`/api/image/${file.id}?w=400`}
-            alt={file.name}
-            className="w-full h-40 object-cover"
-          />
-        </a>
-      )}
-
-      {/* PDF */}
-      {isPdf && (
-        <div className="bg-red-50 p-3 flex items-center gap-3">
-          <div className="w-10 h-10 bg-red-500 rounded-xl flex items-center justify-center flex-shrink-0">
-            <span className="text-white font-black text-xs">PDF</span>
-          </div>
-          <p className="font-bold text-gray-800 truncate text-sm flex-1">{file.name}</p>
-          <a href={`https://drive.google.com/file/d/${file.id}/preview`} target="_blank" rel="noopener noreferrer"
-            className="bg-red-500 text-white px-3 py-2 rounded-xl text-sm font-black hover:opacity-80">
-            צפה
-          </a>
-        </div>
-      )}
-
-      {/* שיר רגיל */}
-      {isMedia && (
-        <div className={`p-4 flex items-center gap-3 cursor-pointer ${isActive ? 'bg-gradient-to-l from-[#FF512F]/20 to-[#DD2476]/20' : 'bg-[#ffe8cc] hover:bg-[#ffd9aa]'}`}
-          onClick={onPlay}>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-black text-sm ${isActive ? 'bg-[#DD2476] text-white' : 'bg-white/60 text-gray-400'}`}>
-            {isActive ? <PlayIcon size={14} color="white" /> : '♪'}
-          </div>
-          <h3 className={`font-bold truncate flex-1 ${isActive ? 'text-[#DD2476]' : 'text-gray-800'}`}>
-            {file.name.replace(/\.[^/.]+$/, '')}
-          </h3>
-          <div className="flex items-center gap-2 flex-shrink-0" onClick={e => e.stopPropagation()}>
-            <FavButton song={file} />
-            <button onClick={onPlay}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-bold ${isActive ? 'bg-[#DD2476] text-white' : 'bg-[#DD2476]/80 text-white hover:bg-[#DD2476]'}`}>
-              <PlayIcon size={14} color="white" />
-              {isActive ? 'מנגן' : 'האזן'}
-            </button>
-            <a href={`/api/stream/${file.id}?download=1`}
-              className="flex items-center gap-1.5 bg-[#FF512F] text-white px-3 py-2 rounded-full text-sm font-bold hover:opacity-80">
-              <DownloadIcon size={14} color="white" />
-              הורד
-            </a>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-export default function Player({ songs, folderId, albumImage }: {
-  songs: any[];
-  folderId?: string;
-  albumImage?: { id: string; name: string } | null;
+export default function Player({ songs, albumImage, artistName, albumName }: {
+  songs: any[]; folderId?: string; albumImage?: { id: string; name: string } | null; artistName?: string; albumName?: string;
 }) {
-  const { play, currentIndex, songs: globalSongs } = usePlayer();
-  
-  // רק קבצי אודיו לניגון
-  const audioFiles = songs.filter(s => !IMAGE_MIME.includes(s.mimeType) && !PDF_MIME.includes(s.mimeType));
-  const isThisPlaylist = globalSongs.length > 0 && audioFiles.length > 0 && globalSongs[0]?.id === audioFiles[0]?.id;
-  const activeAudioIndex = isThisPlaylist ? currentIndex : -1;
+  const { play, playNext, enqueue, currentIndex, songs: queue } = usePlayer();
+  const [menu, setMenu] = useState<string | null>(null);
+  const audio = songs.filter(f => !isImg(f) && !isPdf(f))
+    .map(f => ({ id: f.id, name: f.name, artistName, albumName, coverId: albumImage?.id }));
+  const extras = songs.filter(f => isImg(f) || isPdf(f));
+  const nowId = currentIndex >= 0 ? queue[currentIndex]?.id : null;
 
   return (
-    <div className="pb-4">
-      {folderId && (
-        <div className="mb-4 flex justify-end">
-          <a href={`https://drive.google.com/drive/folders/${folderId}`} target="_blank" rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-white border-2 border-[#DD2476] text-[#DD2476] font-black px-4 py-2 rounded-2xl hover:bg-[#DD2476] hover:text-white transition-colors shadow text-sm">
-            <FolderIcon size={16} color="currentColor" />
-            הורד תיקייה שלמה
-          </a>
-        </div>
-      )}
-
-      {albumImage && (
-        <div className="mb-6 flex justify-center">
-          <img src={`/api/image/${albumImage.id}?w=400`}
-            alt="תמונת אלבום" className="w-48 h-48 object-cover rounded-3xl shadow-xl border-4 border-white" />
-        </div>
-      )}
-
-      <div className="flex flex-col gap-3">
-        {songs.map((file: any, idx: number) => {
-          const isAudio = !IMAGE_MIME.includes(file.mimeType) && !PDF_MIME.includes(file.mimeType);
-          const audioIdx = audioFiles.findIndex(a => a.id === file.id);
-          const isActive = isAudio && activeAudioIndex === audioIdx;
-
+    <div>
+      {menu && <div className="fixed inset-0 z-20" onClick={() => setMenu(null)} />}
+      <ul className="space-y-2">
+        {audio.map((song, i) => {
+          const active = nowId === song.id;
+          const open = menu === song.id;
           return (
-            <FileCard
-              key={file.id}
-              file={file}
-              isActive={isActive}
-              onPlay={() => isAudio && play(audioFiles, audioIdx)}
-            />
+            <li key={song.id} className={`relative ${open ? 'z-30' : ''}`}>
+              <div onClick={() => play(audio, i)}
+                className={`flex cursor-pointer items-center gap-3 rounded-2xl p-2.5 pr-4 transition-all ${active ? 'bg-[#1B1033] text-white shadow-lg' : 'bg-white shadow-sm hover:shadow-md'}`}>
+                <span className={`w-6 flex-none text-center text-sm font-bold ${active ? 'text-[#FFC93C]' : 'text-[#1B1033]/35'}`}>
+                  {active ? <span className="eq on inline-flex"><i /><i /><i /></span> : i + 1}
+                </span>
+                <h3 className={`min-w-0 flex-1 truncate text-[15px] font-extrabold ${active ? 'text-[#FFC93C]' : ''}`}>{song.name.replace(/\.[^/.]+$/, '')}</h3>
+                <div className="flex flex-none items-center gap-1" onClick={e => e.stopPropagation()}>
+                  <FavButton song={song} size="sm" />
+                  <button onClick={() => setMenu(open ? null : song.id)} aria-label="עוד פעולות" aria-expanded={open}
+                    className={`rounded-full p-2 ${active ? 'hover:bg-white/10' : 'hover:bg-black/5'}`}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
+                  </button>
+                  <button onClick={() => play(audio, i)} aria-label="נגן"
+                    className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-[#FFC93C] via-[#FF512F] to-[#DD2476] shadow transition-transform hover:scale-105">
+                    <PlayIcon size={15} color="white" />
+                  </button>
+                </div>
+              </div>
+              {open && (
+                <div className="absolute left-3 top-full z-30 mt-1 w-48 overflow-hidden rounded-2xl bg-white py-1 text-sm font-bold text-[#1B1033] shadow-2xl ring-1 ring-black/5">
+                  <button onClick={() => { playNext(song); setMenu(null); }} className="block w-full px-4 py-2.5 text-right hover:bg-[#FFF3EA]">נגן אחר כך</button>
+                  <button onClick={() => { enqueue(song); setMenu(null); }} className="block w-full px-4 py-2.5 text-right hover:bg-[#FFF3EA]">הוסף לתור</button>
+                  <a href={`/api/stream/${song.id}?download=1`} onClick={() => setMenu(null)} className="block px-4 py-2.5 hover:bg-[#FFF3EA]">הורדה</a>
+                </div>
+              )}
+            </li>
           );
         })}
-      </div>
+      </ul>
+
+      {extras.length > 0 && (
+        <section className="mt-10">
+          <h2 className="mb-3 font-display text-xl font-extrabold">קבצים נוספים</h2>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {extras.map(f => isImg(f) ? (
+              <a key={f.id} href={`/api/image/${f.id}?w=1600`} target="_blank" rel="noopener noreferrer" className="block overflow-hidden rounded-2xl shadow-md transition-transform hover:-translate-y-1">
+                <img src={`/api/image/${f.id}?w=400`} alt={f.name} loading="lazy" className="h-40 w-full object-cover" />
+              </a>
+            ) : (
+              <a key={f.id} href={`/api/stream/${f.id}`} target="_blank" rel="noopener noreferrer"
+                className="flex h-40 flex-col items-center justify-center gap-2 rounded-2xl bg-white p-3 text-center shadow-md transition-transform hover:-translate-y-1">
+                <span className="grid h-12 w-12 place-items-center rounded-xl bg-[#FF512F] text-sm font-extrabold text-white">PDF</span>
+                <span className="line-clamp-2 text-sm font-bold">{f.name.replace(/\.[^/.]+$/, '')}</span>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

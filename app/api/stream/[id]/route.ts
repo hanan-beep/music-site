@@ -37,6 +37,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     out.set('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(m.name || 'song.mp3')}`);
   }
   const type = up.headers.get('content-type') || '';
-  out.set('Content-Type', type.startsWith('audio/') ? type : 'audio/mpeg');
+  out.set('Content-Type', /^(audio\/|application\/pdf)/.test(type) ? type : 'audio/mpeg');
   return new Response(up.body, { status: up.status, headers: out });
 }

@@ -1,17 +1,16 @@
 // app/album/[name]/page.tsx
-import Link from 'next/link';
 import Player from './Player';
 import BackButton from '@/app/BackButton';
 import AlbumFavButton from '@/app/AlbumFavButton';
-import { AlbumIcon, FolderIcon } from '@/app/Icons';
+import AlbumTile from '@/app/AlbumTile';
+import DetailHero from '@/app/DetailHero';
+import PlayAllButton from '@/app/PlayAllButton';
+import { AlbumIcon } from '@/app/Icons';
 
 const IMAGE_MIME = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/jpg'];
 
 async function getFolderContents(folderId: string) {
-  const res = await fetch(
-    `https://music-site-flame.vercel.app/api/drive?folderId=${folderId}`,
-    { cache: 'no-store' }
-  );
+  const res = await fetch(`https://music-site-flame.vercel.app/api/drive?folderId=${folderId}`, { cache: 'no-store' });
   return res.json();
 }
 
@@ -21,58 +20,37 @@ export default async function AlbumPage({ params, searchParams }: any) {
   const contents = await getFolderContents(folderId);
 
   const folders = contents.filter((f: any) => f.mimeType === 'application/vnd.google-apps.folder');
-  const songs = contents.filter((f: any) =>
-    f.mimeType !== 'application/vnd.google-apps.folder' && !IMAGE_MIME.includes(f.mimeType)
-  );
-  const albumImage = contents.find((f: any) => IMAGE_MIME.includes(f.mimeType)) || null;
+  const files = contents.filter((f: any) => f.mimeType !== 'application/vnd.google-apps.folder');
+  const albumImage = files.find((f: any) => IMAGE_MIME.includes(f.mimeType)) || null;
+  const audio = files
+    .filter((f: any) => !IMAGE_MIME.includes(f.mimeType) && f.mimeType !== 'application/pdf')
+    .map((f: any) => ({ id: f.id, name: f.name, albumName, coverId: albumImage?.id }));
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#ffecd2] via-[#fcb69f] to-[#ffd1a9] pb-48" dir="rtl">
-      <header className="bg-gradient-to-r from-[#FF512F] to-[#DD2476] p-6 text-center shadow-2xl">
-        <BackButton />
-        <div className="flex items-center justify-center gap-3">
-          <AlbumIcon size={32} color="white" />
-          <h1 className="text-3xl font-black text-white">{albumName}</h1>
-          <AlbumFavButton album={{ id: folderId, name: albumName }} />
-        </div>
-      </header>
+    <main className="min-h-screen" dir="rtl">
+      <DetailHero
+        back={<BackButton />}
+        title={albumName}
+        meta={`${audio.length} שירים`}
+        titleExtra={<div className="relative h-11 w-11 flex-none rounded-full bg-white/20"><AlbumFavButton album={{ id: folderId, name: albumName }} /></div>}
+        visual={albumImage
+          ? <img src={`/api/image/${albumImage.id}?w=500`} alt="" className="h-44 w-44 rounded-[28px] object-cover shadow-2xl ring-4 ring-white/30" />
+          : <div className="grid h-44 w-44 place-items-center rounded-[28px] bg-white/15 ring-4 ring-white/20"><AlbumIcon size={72} color="white" /></div>}>
+        <PlayAllButton songs={audio} />
+      </DetailHero>
 
-      <div className="p-8">
+      <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
         {folders.length > 0 && (
           <section className="mb-10">
-            <h2 className="text-2xl font-black text-[#DD2476] mb-4 flex items-center gap-2">
-              <FolderIcon size={22} color="#DD2476" /> תיקיות
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {folders.map((folder: any) => (
-                <div key={folder.id} className="relative">
-                  <Link
-                    href={`/album/${folder.id}?name=${encodeURIComponent(folder.name)}`}
-                    className="bg-[#ffe8cc] rounded-2xl p-4 text-center hover:scale-105 transition-transform shadow-md block group">
-                    <div className="flex justify-center mb-2 group-hover:scale-110 transition-transform">
-                      <FolderIcon size={40} color="#FFA502" />
-                    </div>
-                    <h3 className="font-bold text-[#DD2476]">{folder.name}</h3>
-                  </Link>
-                  <AlbumFavButton album={{ id: folder.id, name: folder.name }} />
-                </div>
-              ))}
+            <h2 className="mb-4 font-display text-2xl font-extrabold">תיקיות</h2>
+            <div className="grid grid-cols-2 gap-5 sm:grid-cols-3">
+              {folders.map((f: any) => <AlbumTile key={f.id} id={f.id} name={f.name} />)}
             </div>
           </section>
         )}
-
-        {songs.length > 0 && (
-          <section>
-            <h2 className="text-2xl font-black text-[#DD2476] mb-4">🎵 שירים</h2>
-            <Player songs={songs} folderId={folderId} albumImage={albumImage} />
-          </section>
-        )}
+        {files.length > 0 && <Player songs={files} albumImage={albumImage} albumName={albumName} />}
       </div>
-
-      <footer className="bg-[#ffe8cc] text-center py-6 mt-8">
-        <p className="text-[#DD2476] font-bold">✨ ♩ ♪ ♫ ♬ יאללה שירים 💪 ♬ ♫ ♪ ♩ ✨</p>
-        <p className="text-gray-500 text-sm mt-2">© כל הזכויות שמורות | By Yael</p>
-      </footer>
+      <footer className="px-6 pb-10 pt-6 text-center text-sm text-[#1B1033]/50">© כל הזכויות שמורות | By Yael</footer>
     </main>
   );
 }

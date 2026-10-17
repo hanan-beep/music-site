@@ -53,3 +53,13 @@ export async function getArtistCatalog(artistId: string) {
     };
   } catch { return empty; }
 }
+
+export async function getRecentSongs(limit = 12) {
+  const db = catalogDb();
+  if (!db) return [];
+  try {
+    const { data } = await db.from('songs').select('id,name,artist_name,album_name,created_at')
+      .order('created_at', { ascending: false, nullsFirst: false }).limit(limit);
+    return (data || []).map((s: any) => ({ id: s.id, name: s.name, artistName: s.artist_name as string, albumName: s.album_name as string, createdAt: s.created_at as string | null }));
+  } catch { return []; }
+}

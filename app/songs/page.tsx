@@ -1,8 +1,9 @@
 // app/songs/page.tsx
-export const revalidate = 3600; // cache שעה
+export const revalidate = 300;
 
 import SongsClient from './SongsClient';
 import { google } from 'googleapis';
+import { getAllSongs as getCatalogSongs } from '@/lib/catalog';
 
 const MONTHLY_FOLDER_ID = '1mlTjhQHWEe1x-GXbw10zVF9EtGxmtn72';
 const AUDIO = /\.(mp3|m4a|aac|wav|flac|ogg|opus|wma)$/i;
@@ -114,6 +115,19 @@ async function getAllSongs() {
 }
 
 export default async function SongsPage() {
+  const cat = await getCatalogSongs();
+  if (cat.some(s => s.artistId === 'monthly')) {
+    const mk = (s: any) => {
+      const monthly = s.artistId === 'monthly';
+      const t = s.createdAt ? new Date(s.createdAt).getTime() : 0;
+      return {
+        id: s.id, name: s.name, artistName: s.artistName, albumName: s.albumName,
+        isNew: monthly && Date.now() - t < THIRTY_DAYS, driveOrder: monthly ? t : 999999,
+        createdTime: s.createdAt, isMonthly: monthly,
+      };
+    };
+    return <SongsClient regularSongs={cat.filter(s => s.artistId !== 'monthly').map(mk)} extraSongs={cat.filter(s => s.artistId === 'monthly').map(mk)} />;
+  }
   const { regularSongs, monthlySongs } = await getAllSongs();
   return <SongsClient regularSongs={regularSongs} extraSongs={monthlySongs} />;
 }

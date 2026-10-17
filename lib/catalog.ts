@@ -30,6 +30,6 @@ export async function getAlbums() {
     .map(a => ({ id: a.id, name: a.name, artistName: a.artist_name, coverId: a.cover_id }));
 }
 export async function getAllSongs() {
-  return (await all('songs', 'id,name,artist_name,album_name,created_at', 'name'))
-    .map(s => ({ id: s.id, name: s.name, artistName: s.artist_name, albumName: s.album_name, createdAt: s.created_at }));
+  return (await all('songs', 'id,name,artist_id,artist_name,album_name,created_at', 'name'))
+    .map(s => ({ id: s.id, name: s.name, artistId: s.artist_id, artistName: s.artist_name, albumName: s.album_name, createdAt: s.created_at }));
 }

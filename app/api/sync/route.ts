@@ -79,6 +79,13 @@ export async function GET(req: Request) {
       });
     });
 
+    const months = (await list('1mlTjhQHWEe1x-GXbw10zVF9EtGxmtn72')).filter(f => f.mimeType === FOLDER);
+    await pool(months, 5, async m => {
+      (await list(m.id)).filter(f => AUDIO.test(f.name)).forEach(s => songs.push({
+        id: s.id, name: s.name, artist_id: 'monthly', album_id: m.id, artist_name: '', album_name: m.name, created_at: s.createdTime,
+      }));
+    });
+
     if (artists.length === 0) throw new Error('לא נמצאו זמרים בדרייב, לא מוחק כלום');
     const counts = {
       artists: await save(db, 'artists', artists, start),

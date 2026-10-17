@@ -181,9 +181,7 @@ export default function GlobalPlayer() {
             </div>
 
             <div className="my-8 grid place-items-center">
-              {!isLogo
-                ? <img src={art} alt="" className="aspect-square w-64 rounded-[32px] object-cover shadow-[0_30px_70px_-15px_rgba(221,36,118,.6)]" />
-                : <div className={`disc ${playing ? 'spin' : ''}`} style={{ width: 256, height: 256, padding: 10, boxShadow: '0 30px 70px -15px rgba(221,36,118,.6)' }}><img src={art} alt="" /></div>}
+              <div className={`disc ${playing ? 'spin' : ''}`} style={{ width: 272, height: 272, padding: 10, boxShadow: '0 30px 70px -15px rgba(221,36,118,.6)' }}><img src={art} alt="" /></div>
             </div>
 
             <h2 className="font-display text-2xl font-extrabold leading-snug">{clean(current.name)}</h2>

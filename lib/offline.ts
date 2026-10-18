@@ -1,4 +1,6 @@
 // lib/offline.ts — שמירת שירים במכשיר (Cache Storage) להאזנה ללא אינטרנט
+import { streamUrl } from './streamUrl';
+
 const CACHE = 'yallah-songs';
 const KEY = 'yallah-offline';
 
@@ -16,7 +18,7 @@ export const getSaved = () => Object.values(read());
 export const isSaved = (id: string) => !!read()[id];
 
 export async function saveSong(meta: OfflineMeta) {
-  const res = await fetch(`/api/stream/${meta.id}`);
+  const res = await fetch(streamUrl(meta.id));
   if (!res.ok) throw new Error('download failed');
   const cache = await caches.open(CACHE);
   await cache.put(`/api/stream/${meta.id}`, res);

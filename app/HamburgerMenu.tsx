@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { HomeIcon, MicIcon, AlbumIcon, MusicNoteIcon, HeartIcon, HistoryIcon, MailIcon, MenuIcon, CloseIcon, PlaylistIcon } from './Icons';
+import { HomeIcon, MicIcon, AlbumIcon, MusicNoteIcon, HeartIcon, HistoryIcon, MailIcon, MenuIcon, CloseIcon, PlaylistIcon, DownloadIcon } from './Icons';
+import InstallButton from './InstallButton';
 
 const links = [
   { href: '/', icon: HomeIcon, label: 'דף הבית', c: '#FFC93C' },
@@ -12,6 +13,7 @@ const links = [
   { href: '/songs', icon: MusicNoteIcon, label: 'שירים', c: '#5FF5A0' },
   { href: '/favorites', icon: HeartIcon, label: 'מועדפים', c: '#FF6B9D' },
   { href: '/playlist', icon: PlaylistIcon, label: 'הפלייליסט שלי', c: '#FFA502' },
+  { href: '/downloads', icon: DownloadIcon, label: 'שמורים במכשיר', c: '#5FF5A0' },
   { href: '/history', icon: HistoryIcon, label: 'היסטוריית האזנה', c: '#A29BFE' },
 ];
 
@@ -60,6 +62,7 @@ export default function HamburgerMenu() {
         </nav>
 
         <div className="p-4">
+          <InstallButton />
           <Link href="/contact" className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-[#FFC93C] to-[#FF512F] p-4 text-[#1B1033] shadow-lg">
             <MailIcon size={24} color="#1B1033" />
             <div>

@@ -1,5 +1,6 @@
 // app/album/[name]/Player.tsx — רשימת שירים וקבצים של אלבום / זמר
 'use client';
+import OfflineMenuItem from '@/app/OfflineMenuItem';
 import { useState } from 'react';
 import { usePlayer } from '@/app/PlayerContext';
 import FavButton from '@/app/FavButton';
@@ -47,9 +48,10 @@ export default function Player({ songs, albumImage, artistName, albumName }: {
                 </div>
               </div>
               {open && (
-                <div className="absolute left-3 top-full z-30 mt-1 w-48 overflow-hidden rounded-2xl bg-white py-1 text-sm font-bold text-[#1B1033] shadow-2xl ring-1 ring-black/5">
+                <div className="absolute left-3 top-full z-30 mt-1 w-60 overflow-hidden rounded-2xl bg-white py-1 text-sm font-bold text-[#1B1033] shadow-2xl ring-1 ring-black/5">
                   <button onClick={() => { playNext(song); setMenu(null); }} className="block w-full px-4 py-2.5 text-right hover:bg-[#FFF3EA]">נגן אחר כך</button>
                   <button onClick={() => { enqueue(song); setMenu(null); }} className="block w-full px-4 py-2.5 text-right hover:bg-[#FFF3EA]">הוסף לתור</button>
+                  <OfflineMenuItem song={song} onDone={() => setMenu(null)} />
                   <a href={`/api/stream/${song.id}?download=1`} onClick={() => setMenu(null)} className="block px-4 py-2.5 hover:bg-[#FFF3EA]">הורדה</a>
                 </div>
               )}

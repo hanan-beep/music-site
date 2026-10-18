@@ -20,6 +20,7 @@ export const metadata: Metadata = {
   title: "יאללה שירים 💪",
   description: "הארכיון המוזיקלי החרדי הגדול ביותר",
   manifest: "/manifest.json",
+  icons: { icon: "/icon-192.png", apple: "/icon-192.png" },
   appleWebApp: { capable: true, statusBarStyle: "default", title: "יאללה שירים" },
 };
 

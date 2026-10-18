@@ -71,10 +71,15 @@ export default function GlobalPlayer() {
         title: clean(current.name), artist: current.artistName || 'יאללה שירים', album: current.albumName || '',
         artwork: [{ src: '/logo.png', sizes: '512x512', type: 'image/png' }],
       });
-      navigator.mediaSession.setActionHandler('play', () => audio.current?.play());
-      navigator.mediaSession.setActionHandler('pause', () => audio.current?.pause());
-      navigator.mediaSession.setActionHandler('previoustrack', () => fns.current.back());
-      navigator.mediaSession.setActionHandler('nexttrack', () => fns.current.advance());
+      const h = (a: MediaSessionAction, f: MediaSessionActionHandler) => { try { navigator.mediaSession.setActionHandler(a, f); } catch {} };
+      h('play', () => audio.current?.play());
+      h('pause', () => audio.current?.pause());
+      h('stop', () => audio.current?.pause());
+      h('previoustrack', () => fns.current.back());
+      h('nexttrack', () => fns.current.advance());
+      h('seekbackward', () => { if (audio.current) audio.current.currentTime = Math.max(0, audio.current.currentTime - 10); });
+      h('seekforward', () => { if (audio.current) audio.current.currentTime += 10; });
+      h('seekto', d => { if (audio.current && d.seekTime != null) audio.current.currentTime = d.seekTime; });
     }
   }, [current?.id]);
 
@@ -103,6 +108,12 @@ export default function GlobalPlayer() {
       }
     } catch {}
   }, [art]);
+
+  useEffect(() => {
+    try {
+      if ('mediaSession' in navigator && dur > 0 && isFinite(dur)) navigator.mediaSession.setPositionState({ duration: dur, position: Math.min(time, dur), playbackRate: 1 });
+    } catch {}
+  }, [Math.floor(time / 2), dur]);
 
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : '';

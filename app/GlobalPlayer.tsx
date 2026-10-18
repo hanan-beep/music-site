@@ -5,8 +5,8 @@ import { useHistory } from './HistoryContext';
 import { PrevIcon, NextIcon, CloseIcon } from './Icons';
 import FavButton from './FavButton';
 
-const BASE = process.env.NEXT_PUBLIC_STREAM_BASE || '';
-const src = (id: string) => `${BASE}/api/stream/${id}`;
+import { streamUrl, STREAM_BASE } from '@/lib/streamUrl';
+const src = (id: string) => streamUrl(id);
 const clean = (n: string) => n.replace(/\.[^/.]+$/, '');
 const fmt = (s: number) => (isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '0:00');
 type Repeat = 'off' | 'all' | 'one';
@@ -24,6 +24,7 @@ export default function GlobalPlayer() {
   const audio = useRef<HTMLAudioElement>(null);
   const preload = useRef<HTMLAudioElement>(null);
   const played = useRef<number[]>([]);
+  const triedFallback = useRef<string | null>(null);
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -152,7 +153,13 @@ export default function GlobalPlayer() {
       <audio ref={audio} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)}
         onWaiting={() => setLoading(true)} onPlaying={() => setLoading(false)} onCanPlay={() => setLoading(false)}
         onTimeUpdate={e => setTime(e.currentTarget.currentTime)} onLoadedMetadata={e => setDur(e.currentTarget.duration)}
-        onEnded={() => advance(true)} onError={() => { setFailed(true); setTimeout(() => advance(), 1500); }} />
+        onEnded={() => advance(true)} onError={() => {
+          if (STREAM_BASE && current && triedFallback.current !== current.id) {
+            triedFallback.current = current.id; // ה-Worker נכשל? מנסים דרך האתר עצמו
+            audio.current!.src = `/api/stream/${current.id}`; audio.current!.play().catch(() => {}); return;
+          }
+          setFailed(true); setTimeout(() => advance(), 1500);
+        }} />
       <audio ref={preload} preload="auto" className="hidden" muted />
 
       {current && !open && (

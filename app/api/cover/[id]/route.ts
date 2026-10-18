@@ -1,4 +1,5 @@
 import { google } from 'googleapis';
+import { sameSite } from '@/lib/guard';
 export const dynamic = 'force-dynamic';
 export const preferredRegion = 'fra1';
 
@@ -22,8 +23,9 @@ async function range(id: string, token: string, from: number, to: number) {
 }
 
 // עטיפת האלבום שמוטמעת בתוך קובץ ה-MP3 (תגית ID3, מסגרת APIC). אם אין — 404.
-export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  if (!sameSite(req)) return new Response('forbidden', { status: 403 });
   if (!/^[\w-]{10,}$/.test(id)) return new Response('bad id', { status: 400 });
   const token = `Bearer ${await auth.getAccessToken()}`;
 

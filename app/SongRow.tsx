@@ -1,4 +1,5 @@
 'use client';
+import { streamUrl } from '@/lib/streamUrl';
 import OfflineMenuItem from './OfflineMenuItem';
 import { useState } from 'react';
 import { usePlayer } from './PlayerContext';
@@ -39,7 +40,7 @@ export default function SongRow({ song, sub, active, onPlay }: { song: S; sub?: 
           <button onClick={() => { playNext(q); setOpen(false); }} className="block w-full px-4 py-2.5 text-right hover:bg-[#FFF3EA]">נגן אחר כך</button>
           <button onClick={() => { enqueue(q); setOpen(false); }} className="block w-full px-4 py-2.5 text-right hover:bg-[#FFF3EA]">הוסף לתור</button>
           <OfflineMenuItem song={q} onDone={() => setOpen(false)} />
-          <a href={`/api/stream/${song.id}?download=1`} onClick={() => setOpen(false)} className="block px-4 py-2.5 hover:bg-[#FFF3EA]">הורדה</a>
+          <a href={streamUrl(song.id, true)} onClick={() => setOpen(false)} className="block px-4 py-2.5 hover:bg-[#FFF3EA]">הורדה</a>
         </div>
       )}
     </li>

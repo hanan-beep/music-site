@@ -1,5 +1,6 @@
 // app/album/[name]/Player.tsx — רשימת שירים וקבצים של אלבום / זמר
 'use client';
+import { streamUrl } from '@/lib/streamUrl';
 import OfflineMenuItem from '@/app/OfflineMenuItem';
 import { useState } from 'react';
 import { usePlayer } from '@/app/PlayerContext';
@@ -52,7 +53,7 @@ export default function Player({ songs, albumImage, artistName, albumName }: {
                   <button onClick={() => { playNext(song); setMenu(null); }} className="block w-full px-4 py-2.5 text-right hover:bg-[#FFF3EA]">נגן אחר כך</button>
                   <button onClick={() => { enqueue(song); setMenu(null); }} className="block w-full px-4 py-2.5 text-right hover:bg-[#FFF3EA]">הוסף לתור</button>
                   <OfflineMenuItem song={song} onDone={() => setMenu(null)} />
-                  <a href={`/api/stream/${song.id}?download=1`} onClick={() => setMenu(null)} className="block px-4 py-2.5 hover:bg-[#FFF3EA]">הורדה</a>
+                  <a href={streamUrl(song.id, true)} onClick={() => setMenu(null)} className="block px-4 py-2.5 hover:bg-[#FFF3EA]">הורדה</a>
                 </div>
               )}
             </li>

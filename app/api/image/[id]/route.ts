@@ -1,4 +1,5 @@
 import { google } from 'googleapis';
+import { sameSite } from '@/lib/guard';
 export const dynamic = 'force-dynamic';
 export const preferredRegion = 'fra1';
 
@@ -13,6 +14,7 @@ const auth = new google.auth.GoogleAuth({
 // תמונות (זמרים/אלבומים) דרך השרת — עובד גם כשהקבצים בדרייב פרטיים, וגם כשהדפדפן חוסם עוגיות של צד שלישי.
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  if (!sameSite(req)) return new Response('forbidden', { status: 403 });
   if (!/^[\w-]{10,}$/.test(id)) return new Response('bad id', { status: 400 });
   const w = Math.min(1600, Math.max(100, Number(new URL(req.url).searchParams.get('w')) || 400));
 

@@ -1,4 +1,5 @@
 import { google } from 'googleapis';
+import { sameSite } from '@/lib/guard';
 export const dynamic = 'force-dynamic';
 export const preferredRegion = 'fra1'; // פרנקפורט — הכי קרוב לישראל
 
@@ -13,6 +14,7 @@ const auth = new google.auth.GoogleAuth({
 // הזרמת שיר מהדרייב עם תמיכה בגלילה (Range). בשלב 3 נחליף ל-Worker ונוסיף בדיקת הרשאה.
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  if (!sameSite(req)) return new Response('forbidden', { status: 403 });
   if (!/^[\w-]{10,}$/.test(id)) return new Response('bad id', { status: 400 });
 
   const token = await auth.getAccessToken();

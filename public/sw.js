@@ -1,5 +1,5 @@
 // public/sw.js — v2: דפים "רשת קודם" (תמיד גרסה עדכנית), קבצים סטטיים ממטמון, ושירים שמורים להאזנה ללא אינטרנט
-const VERSION = 'v2';
+const VERSION = 'v3';
 const STATIC = 'yallah-static-' + VERSION;
 const PAGES = 'yallah-pages-' + VERSION;
 const IMAGES = 'yallah-img-' + VERSION;
@@ -43,13 +43,14 @@ self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  if (url.origin !== location.origin) return;
 
   // שיר שמור במכשיר → מנגנים ממנו (כולל גלילה בתוך השיר)
   if (url.pathname.startsWith('/api/stream/') && !url.searchParams.has('download')) {
     e.respondWith(serveSong(req, url.pathname).then(r => r || fetch(req)));
     return;
   }
+  if (url.origin !== location.origin) return;
+
   if (url.pathname.startsWith('/api/image/') || url.pathname.startsWith('/api/cover/')) {
     e.respondWith(cacheFirst(req, IMAGES).catch(() => new Response('', { status: 504 })));
     return;

@@ -31,6 +31,7 @@ async function getToken(env) {
   return j.access_token;
 }
 
+const okType = t => /^(audio\/|video\/mp4|application\/(ogg|pdf|octet-stream))/.test(t || '');
 const kind = t => (/^(audio\/|application\/pdf)/.test(t || '') ? t : 'audio/mpeg');
 
 export default {
@@ -67,12 +68,14 @@ export default {
           // גלילה לאמצע שיר שעדיין לא במטמון — מעבירים ישירות
           const up = await fetch(driveUrl, { headers: { ...auth, Range: range } });
           if (!up.ok) return new Response('not found', { status: up.status === 404 ? 404 : 502 });
+          if (!okType(up.headers.get('content-type'))) return new Response('forbidden', { status: 403 });
           const h = new Headers({ 'Content-Type': kind(up.headers.get('content-type')), 'Accept-Ranges': 'bytes' });
           for (const k of ['content-length', 'content-range']) if (up.headers.get(k)) h.set(k, up.headers.get(k));
           res = new Response(up.body, { status: up.status, headers: h });
         } else {
           const up = await fetch(driveUrl, { headers: auth });
           if (!up.ok) return new Response('not found', { status: up.status === 404 ? 404 : 502 });
+          if (!okType(up.headers.get('content-type'))) return new Response('forbidden', { status: 403 });
           const h = new Headers({ 'Content-Type': kind(up.headers.get('content-type')), 'Accept-Ranges': 'bytes', 'Cache-Control': 'public, max-age=604800' });
           if (up.headers.get('content-length')) h.set('Content-Length', up.headers.get('content-length'));
           const [a, b] = up.body.tee();

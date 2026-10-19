@@ -1,7 +1,6 @@
 import { google } from 'googleapis';
 import { sameSite } from '@/lib/guard';
 export const dynamic = 'force-dynamic';
-export const preferredRegion = 'fra1';
 
 const auth = new google.auth.GoogleAuth({
   credentials: {
@@ -20,7 +19,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
   const Authorization = `Bearer ${await auth.getAccessToken()}`;
   const meta = await fetch(
-    `https://www.googleapis.com/drive/v3/files/${id}?fields=thumbnailLink&supportsAllDrives=true`,
+    `https://www.googleapis.com/drive/v3/files/${id}?fields=thumbnailLink,mimeType&supportsAllDrives=true`,
     { headers: { Authorization } }
   ).then(r => (r.ok ? r.json() : null)).catch(() => null);
 
@@ -29,6 +28,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     up = await fetch(meta.thumbnailLink.replace(/=s\d+$/, `=w${w}`), { headers: { Authorization } }).catch(() => null);
     if (up && !up.ok) up = null;
   }
+  if (!up && !String(meta?.mimeType).startsWith('image/')) return new Response('not found', { status: 404 });
   if (!up) up = await fetch(`https://www.googleapis.com/drive/v3/files/${id}?alt=media&supportsAllDrives=true`, { headers: { Authorization } });
   if (!up.ok) return new Response('not found', { status: 404 });
 

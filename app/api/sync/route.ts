@@ -1,5 +1,6 @@
 // app/api/sync/route.ts — סורק את הדרייב ומעדכן את הקטלוג. רץ אוטומטית פעם ביום (vercel.json).
 import { google } from 'googleapis';
+import { timingSafeEqual } from 'crypto';
 import { catalogDb } from '@/lib/catalog';
 
 export const dynamic = 'force-dynamic';
@@ -47,10 +48,12 @@ async function save(db: any, table: string, rows: any[], start: string) {
   return uniq.length;
 }
 
+const safeEq = (a: string, b: string) => { const x = Buffer.from(a), y = Buffer.from(b); return x.length === y.length && timingSafeEqual(x, y); };
+
 export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET;
   const given = req.headers.get('authorization')?.replace('Bearer ', '') ?? new URL(req.url).searchParams.get('key');
-  if (!secret || given !== secret) return new Response('unauthorized', { status: 401 });
+  if (!secret || !given || !safeEq(given, secret)) return new Response('unauthorized', { status: 401 });
 
   const db = catalogDb();
   if (!db) return Response.json({ error: 'חסר SUPABASE_SERVICE_ROLE_KEY' }, { status: 500 });

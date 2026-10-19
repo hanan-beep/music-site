@@ -1,7 +1,6 @@
 import { google } from 'googleapis';
 import { sameSite } from '@/lib/guard';
 export const dynamic = 'force-dynamic';
-export const preferredRegion = 'fra1';
 
 const auth = new google.auth.GoogleAuth({
   credentials: {

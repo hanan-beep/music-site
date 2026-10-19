@@ -1,5 +1,6 @@
 // app/api/drive/route.ts
 import { google } from 'googleapis';
+import { sameSite } from '@/lib/guard';
 
 const auth = new google.auth.GoogleAuth({
   credentials: {
@@ -25,6 +26,8 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const folderId = searchParams.get('folderId');
+    if (!sameSite(request)) return Response.json({ error: 'forbidden' }, { status: 403 });
+    if (folderId && !/^[\w-]{10,}$/.test(folderId)) return Response.json({ error: 'bad folderId' }, { status: 400 });
     const drive = google.drive({ version: 'v3', auth });
 
     if (folderId) {

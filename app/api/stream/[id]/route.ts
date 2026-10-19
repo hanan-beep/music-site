@@ -1,7 +1,6 @@
 import { google } from 'googleapis';
 import { sameSite } from '@/lib/guard';
 export const dynamic = 'force-dynamic';
-export const preferredRegion = 'fra1'; // פרנקפורט — הכי קרוב לישראל
 
 const auth = new google.auth.GoogleAuth({
   credentials: {
@@ -27,6 +26,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     { headers }
   );
   if (!up.ok) return new Response('not found', { status: up.status });
+  if (!/^(audio\/|video\/mp4|application\/(ogg|pdf|octet-stream))/.test(up.headers.get('content-type') || '')) return new Response('forbidden', { status: 403 });
 
   const out = new Headers({ 'Accept-Ranges': 'bytes', 'Cache-Control': 'private, max-age=3600' });
   for (const k of ['content-length', 'content-range']) {

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { MicIcon, AlbumIcon, MusicNoteIcon } from './Icons';
 import { getRecentSongs } from '@/lib/catalog';
 import { RecentRow, HistoryRow } from './HomeRows';
+import RandomButton from './RandomButton';
 
 const tiles = [
   { href: '/artists', title: 'זמרים', sub: 'דפדוף לפי שם הזמר', bg: 'bg-[#DD2476] text-white', icon: <MicIcon size={44} color="#FFC93C" />, wide: true },
@@ -23,6 +24,7 @@ export default async function Home() {
         <h1 className="mt-5 text-5xl font-extrabold sm:text-6xl">יאללה שירים</h1>
         <p className="mt-3 text-xl font-semibold text-white/95">הארכיון המוזיקלי החרדי הגדול ביותר</p>
         <p className="mt-2 max-w-md text-white/75">מאגר ענק של מוזיקה חרדית / דתית, לפי זמרים, אלבומים ואוספים</p>
+        <RandomButton />
         <div className="pointer-events-none absolute -bottom-24 -left-16 h-72 w-72 rounded-full bg-[#FFC93C]/40 blur-3xl" />
       </header>
 

@@ -63,3 +63,26 @@ export async function getRecentSongs(limit = 12) {
     return (data || []).map((s: any) => ({ id: s.id, name: s.name, artistName: s.artist_name as string, albumName: s.album_name as string, createdAt: s.created_at as string | null }));
   } catch { return []; }
 }
+
+export async function getSongById(id: string) {
+  const db = catalogDb();
+  if (!db) return null;
+  try {
+    const { data } = await db.from('songs').select('id,name,artist_name,album_name').eq('id', id).maybeSingle();
+    return data ? { id: data.id as string, name: data.name as string, artistName: data.artist_name as string, albumName: data.album_name as string } : null;
+  } catch { return null; }
+}
+
+export async function getRandomSongs(n = 40) {
+  const db = catalogDb();
+  if (!db) return [];
+  try {
+    const { count } = await db.from('songs').select('id', { count: 'exact', head: true });
+    const total = count || 0;
+    if (!total) return [];
+    const from = Math.floor(Math.random() * Math.max(1, total - n));
+    const { data } = await db.from('songs').select('id,name,artist_name,album_name').order('id').range(from, from + n - 1);
+    return (data || []).map((s: any) => ({ id: s.id as string, name: s.name as string, artistName: s.artist_name as string, albumName: s.album_name as string }))
+      .sort(() => Math.random() - 0.5);
+  } catch { return []; }
+}

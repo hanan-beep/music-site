@@ -25,6 +25,13 @@ export default function GlobalPlayer() {
   const preload = useRef<HTMLAudioElement>(null);
   const played = useRef<number[]>([]);
   const triedFallback = useRef<string | null>(null);
+  const stallTimer = useRef<any>(null);
+  const resumeAt = useRef(0);
+  const savedPos = useRef<{ id: string; t: number } | null>(null);
+  const [sleepAt, setSleepAt] = useState<number | null>(null);
+  const [sleepEnd, setSleepEnd] = useState(false);
+  const [sleepOpen, setSleepOpen] = useState(false);
+  const [sleepLeft, setSleepLeft] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -60,10 +67,21 @@ export default function GlobalPlayer() {
   fns.current = { advance, back };
 
   useEffect(() => {
+    try { savedPos.current = JSON.parse(localStorage.getItem('yallah-pos') || 'null'); } catch {}
+    try { const as = (navigator as any).audioSession; if (as) as.type = 'playback'; } catch {}
+    const online = () => { const a = audio.current; if (a && !a.paused && a.readyState < 3) reconnectRef.current(); };
+    window.addEventListener('online', online);
+    return () => window.removeEventListener('online', online);
+  }, []);
+
+  useEffect(() => {
     if (!current || !audio.current) return;
     setFailed(false); setTime(0); setLoading(true);
     audio.current.src = src(current.id);
-    audio.current.play().catch(() => {});
+    const restored = savedPos.current?.id === current.id; // פתיחה מחדש: ממשיכים מאותה נקודה, בלי להתחיל לנגן לבד
+    resumeAt.current = restored ? savedPos.current!.t : 0;
+    savedPos.current = null;
+    if (!restored) audio.current.play().catch(() => {});
     addToHistory({ id: current.id, name: current.name, artistName: current.artistName, albumName: current.albumName });
     const nx = songs[currentIndex + 1];
     if (preload.current && nx && !shuffle) preload.current.src = src(nx.id);
@@ -123,6 +141,45 @@ export default function GlobalPlayer() {
     return () => { window.removeEventListener('keydown', esc); document.body.style.overflow = ''; };
   }, [open]);
 
+  const setMS = (state: 'playing' | 'paused') => { try { if ('mediaSession' in navigator) navigator.mediaSession.playbackState = state; } catch {} };
+  // רשת חלשה (למשל ברכב): אם השיר תקוע יותר מ-12 שניות, מתחברים מחדש ממש מאותה נקודה
+  const reconnect = () => {
+    const a = audio.current;
+    if (!a || !current || a.paused) return;
+    resumeAt.current = a.currentTime;
+    a.src = src(current.id);
+    a.play().catch(() => {});
+  };
+  const reconnectRef = useRef(reconnect);
+  reconnectRef.current = reconnect;
+  const armStall = () => { clearTimeout(stallTimer.current); stallTimer.current = setTimeout(() => reconnectRef.current(), 12000); };
+  const clearStall = () => clearTimeout(stallTimer.current);
+  const chooseSleep = (m: number | 'end') => {
+    setSleepOpen(false);
+    if (m === 0) { setSleepAt(null); setSleepEnd(false); }
+    else if (m === 'end') { setSleepAt(null); setSleepEnd(true); }
+    else { setSleepEnd(false); setSleepAt(Date.now() + m * 60000); }
+  };
+
+  useEffect(() => {
+    if (!current || time < 1) return;
+    try { localStorage.setItem('yallah-pos', JSON.stringify({ id: current.id, t: time })); } catch {}
+  }, [Math.floor(time / 5)]);
+
+  useEffect(() => {
+    if (!sleepAt) { setSleepLeft(0); return; }
+    const tick = () => {
+      const left = sleepAt - Date.now();
+      setSleepLeft(Math.max(0, left));
+      const a = audio.current;
+      if (a && left < 10000 && left > 0) a.volume = Math.max(0.05, left / 10000);
+      if (left <= 0) { a?.pause(); if (a) a.volume = 1; setSleepAt(null); }
+    };
+    tick();
+    const id = setInterval(tick, 500);
+    return () => { clearInterval(id); if (audio.current) audio.current.volume = 1; };
+  }, [sleepAt]);
+
   const toggle = () => (playing ? audio.current?.pause() : audio.current?.play());
   const noNext = !shuffle && repeat !== 'all' && currentIndex >= songs.length - 1;
   const cycleRepeat = () => setRepeat(r => (r === 'off' ? 'all' : r === 'all' ? 'one' : 'off'));
@@ -150,10 +207,11 @@ export default function GlobalPlayer() {
 
   return (
     <>
-      <audio ref={audio} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)}
-        onWaiting={() => setLoading(true)} onPlaying={() => setLoading(false)} onCanPlay={() => setLoading(false)}
-        onTimeUpdate={e => setTime(e.currentTarget.currentTime)} onLoadedMetadata={e => setDur(e.currentTarget.duration)}
-        onEnded={() => advance(true)} onError={() => {
+      <audio ref={audio} onPlay={() => { setPlaying(true); setMS('playing'); }} onPause={() => { setPlaying(false); setMS('paused'); }}
+        onWaiting={() => { setLoading(true); armStall(); }} onStalled={armStall}
+        onPlaying={() => { setLoading(false); clearStall(); }} onCanPlay={() => { setLoading(false); clearStall(); }}
+        onTimeUpdate={e => setTime(e.currentTarget.currentTime)} onLoadedMetadata={e => { setDur(e.currentTarget.duration); if (resumeAt.current > 0) { e.currentTarget.currentTime = resumeAt.current; resumeAt.current = 0; } }}
+        onEnded={() => { if (sleepEnd) { setSleepEnd(false); return; } advance(true); }} onError={() => {
           if (STREAM_BASE && current && triedFallback.current !== current.id) {
             triedFallback.current = current.id; // ה-Worker נכשל? מנסים דרך האתר עצמו
             audio.current!.src = `/api/stream/${current.id}`; audio.current!.play().catch(() => {}); return;
@@ -213,6 +271,21 @@ export default function GlobalPlayer() {
               {PlayBtn({ size: 68 })}
               <button onClick={() => advance()} disabled={noNext} aria-label="הבא" className="p-2.5 disabled:opacity-30"><NextIcon size={28} color="white" /></button>
               <button onClick={cycleRepeat} aria-label="חזרה" className="p-2.5"><RepeatIcon one={repeat === 'one'} color={repeat === 'off' ? 'rgba(255,255,255,.55)' : '#FFC93C'} /></button>
+            </div>
+
+            <div className="mt-6 flex flex-col items-center gap-3">
+              <button onClick={() => setSleepOpen(o => !o)}
+                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold ring-1 ${sleepAt || sleepEnd ? 'bg-[#FFC93C]/15 text-[#FFC93C] ring-[#FFC93C]/40' : 'text-white/70 ring-white/20 hover:bg-white/10'}`}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg>
+                {sleepAt ? `נרדם בעוד ${fmt(sleepLeft / 1000)}` : sleepEnd ? 'נרדם בסוף השיר' : 'טיימר שינה'}
+              </button>
+              {sleepOpen && (
+                <div className="flex flex-wrap justify-center gap-2">
+                  {([['כבוי', 0], ['15 דק׳', 15], ['30 דק׳', 30], ['45 דק׳', 45], ['שעה', 60], ['סוף השיר', 'end']] as [string, number | 'end'][]).map(([l, v]) => (
+                    <button key={l} onClick={() => chooseSleep(v)} className="rounded-full bg-white/10 px-4 py-2 text-sm font-bold hover:bg-white/20">{l}</button>
+                  ))}
+                </div>
+              )}
             </div>
 
             <h3 className="mb-2 mt-10 font-display text-lg font-extrabold">התור ({songs.length})</h3>

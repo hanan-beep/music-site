@@ -2,6 +2,7 @@
 'use client';
 import { streamUrl } from '@/lib/streamUrl';
 import OfflineMenuItem from '@/app/OfflineMenuItem';
+import ShareMenuItem from '@/app/ShareMenuItem';
 import { useState, useMemo, useEffect } from 'react';
 import { usePlayer } from '@/app/PlayerContext';
 import FavButton from '@/app/FavButton';
@@ -157,6 +158,7 @@ export default function SongsClient({ regularSongs, extraSongs }: { regularSongs
                     <button onClick={() => { playNext(toQ(song)); setMenu(null); }} className="block w-full px-4 py-2.5 text-right hover:bg-[#FFF3EA]">נגן אחר כך</button>
                     <button onClick={() => { enqueue(toQ(song)); setMenu(null); }} className="block w-full px-4 py-2.5 text-right hover:bg-[#FFF3EA]">הוסף לתור</button>
                     <OfflineMenuItem song={toQ(song)} onDone={() => setMenu(null)} />
+                    <ShareMenuItem song={toQ(song)} onDone={() => setMenu(null)} />
                     <a href={streamUrl(song.id, true)} onClick={() => setMenu(null)} className="block px-4 py-2.5 hover:bg-[#FFF3EA]">הורדה</a>
                   </div>
                 )}

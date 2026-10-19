@@ -1,5 +1,5 @@
 // public/sw.js — v2: דפים "רשת קודם" (תמיד גרסה עדכנית), קבצים סטטיים ממטמון, ושירים שמורים להאזנה ללא אינטרנט
-const VERSION = 'v3';
+const VERSION = 'v4';
 const STATIC = 'yallah-static-' + VERSION;
 const PAGES = 'yallah-pages-' + VERSION;
 const IMAGES = 'yallah-img-' + VERSION;

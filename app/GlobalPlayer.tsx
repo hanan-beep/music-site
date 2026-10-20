@@ -24,6 +24,7 @@ export default function GlobalPlayer() {
   const audio = useRef<HTMLAudioElement>(null);
   const preload = useRef<HTMLAudioElement>(null);
   const played = useRef<number[]>([]);
+  const planned = useRef<number | null>(null); // השיר הבא שנבחר מראש בערבוב, כדי להכין אותו מראש
   const triedFallback = useRef<string | null>(null);
   const stallTimer = useRef<any>(null);
   const resumeAt = useRef(0);
@@ -44,15 +45,18 @@ export default function GlobalPlayer() {
   const [art, setArt] = useState('/logo.png');
   const isLogo = art === '/logo.png';
 
+  const pickShuffle = () => {
+    const others = songs.map((_, i) => i).filter(i => i !== currentIndex);
+    const fresh = others.filter(i => !played.current.includes(i));
+    if (!fresh.length) played.current = [];
+    const pool = fresh.length ? fresh : others;
+    return pool[Math.floor(Math.random() * pool.length)];
+  };
   const advance = (auto = false) => {
     if (auto && repeat === 'one') { audio.current!.currentTime = 0; audio.current!.play(); return; }
     let n = -1;
     if (shuffle && songs.length > 1) {
-      const others = songs.map((_, i) => i).filter(i => i !== currentIndex);
-      const fresh = others.filter(i => !played.current.includes(i));
-      if (!fresh.length) played.current = [];
-      const pool = fresh.length ? fresh : others;
-      n = pool[Math.floor(Math.random() * pool.length)];
+      n = planned.current != null && planned.current !== currentIndex && songs[planned.current] ? planned.current : pickShuffle();
     } else if (currentIndex < songs.length - 1) n = currentIndex + 1;
     else if (repeat === 'all') n = 0;
     if (n >= 0) { played.current.push(currentIndex); playIndex(n); }
@@ -83,8 +87,10 @@ export default function GlobalPlayer() {
     savedPos.current = null;
     if (!restored) audio.current.play().catch(() => {});
     addToHistory({ id: current.id, name: current.name, artistName: current.artistName, albumName: current.albumName });
-    const nx = songs[currentIndex + 1];
-    if (preload.current && nx && !shuffle) preload.current.src = src(nx.id);
+    let nxIdx = currentIndex + 1;
+    if (shuffle && songs.length > 1) { nxIdx = pickShuffle(); planned.current = nxIdx; } else planned.current = null;
+    const nx = songs[nxIdx];
+    if (preload.current && nx) preload.current.src = src(nx.id);
     if ('mediaSession' in navigator) {
       navigator.mediaSession.metadata = new MediaMetadata({
         title: clean(current.name), artist: current.artistName || 'יאללה שירים', album: current.albumName || '',
@@ -266,7 +272,7 @@ export default function GlobalPlayer() {
             <div className="mt-6">{Seek()}</div>
 
             <div dir="ltr" className="mt-4 flex items-center justify-between">
-              <button onClick={() => { setShuffle(s => !s); played.current = []; }} aria-label="ערבוב" aria-pressed={shuffle} className="p-2.5"><ShuffleIcon color={shuffle ? '#FFC93C' : 'rgba(255,255,255,.55)'} /></button>
+              <button onClick={() => { setShuffle(s => !s); played.current = []; planned.current = null; }} aria-label="ערבוב" aria-pressed={shuffle} className="p-2.5"><ShuffleIcon color={shuffle ? '#FFC93C' : 'rgba(255,255,255,.55)'} /></button>
               <button onClick={back} aria-label="הקודם" className="p-2.5"><PrevIcon size={28} color="white" /></button>
               {PlayBtn({ size: 68 })}
               <button onClick={() => advance()} disabled={noNext} aria-label="הבא" className="p-2.5 disabled:opacity-30"><NextIcon size={28} color="white" /></button>

@@ -13,6 +13,10 @@ function pemToDer(pem) {
 async function getToken(env) {
   const now = Math.floor(Date.now() / 1000);
   if (tokenCache.token && tokenCache.exp - 60 > now) return tokenCache.token;
+  // שיתוף הטוקן בין מופעים של ה-Worker דרך המטמון, כדי לא לחתום ולבקש מגוגל מחדש בכל התחלה קרה
+  const tkey = new Request('https://token-cache.invalid/t');
+  const saved = await caches.default.match(tkey).then(r => (r ? r.json() : null)).catch(() => null);
+  if (saved && saved.exp - 60 > now) { tokenCache = saved; return saved.token; }
   const enc = o => b64url(new TextEncoder().encode(JSON.stringify(o)));
   const unsigned = `${enc({ alg: 'RS256', typ: 'JWT' })}.${enc({
     iss: env.GOOGLE_CLIENT_EMAIL, scope: 'https://www.googleapis.com/auth/drive.readonly',
@@ -28,6 +32,7 @@ async function getToken(env) {
   const j = await res.json();
   if (!j.access_token) throw new Error('google auth failed');
   tokenCache = { token: j.access_token, exp: now + (j.expires_in || 3600) };
+  await caches.default.put(tkey, new Response(JSON.stringify(tokenCache), { headers: { 'Cache-Control': 'max-age=3000' } })).catch(() => {});
   return j.access_token;
 }
 

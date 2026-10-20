@@ -1,8 +1,8 @@
 // app/page.tsx
 import Link from 'next/link';
 import { MicIcon, AlbumIcon, MusicNoteIcon } from './Icons';
-import { getRecentSongs } from '@/lib/catalog';
-import { RecentRow, HistoryRow } from './HomeRows';
+import { getRecentSongs, getTopSongs } from '@/lib/catalog';
+import { RecentRow, HistoryRow, TopRow } from './HomeRows';
 import RandomButton from './RandomButton';
 
 const tiles = [
@@ -14,7 +14,8 @@ const tiles = [
 export const revalidate = 300;
 
 export default async function Home() {
-  const recent = (await getRecentSongs(12)).map(s => ({
+  const [recentRaw, top] = await Promise.all([getRecentSongs(12), getTopSongs(12)]);
+  const recent = recentRaw.map(s => ({
     ...s, isNew: !!s.createdAt && Date.now() - new Date(s.createdAt).getTime() < 14 * 86400000,
   }));
   return (
@@ -42,6 +43,7 @@ export default async function Home() {
       </section>
 
       <RecentRow songs={recent} />
+      <TopRow songs={top} />
       <HistoryRow />
 
       <footer className="px-6 pb-10 pt-14 text-center text-sm text-[#1B1033]/60">© כל הזכויות שמורות | By Yael</footer>

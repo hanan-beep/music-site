@@ -86,3 +86,12 @@ export async function getRandomSongs(n = 40) {
       .sort(() => Math.random() - 0.5);
   } catch { return []; }
 }
+
+export async function getTopSongs(limit = 12, days = 30) {
+  const db = catalogDb();
+  if (!db) return [];
+  try {
+    const { data } = await db.rpc('top_songs', { days, lim: limit });
+    return ((data as any[]) || []).map(s => ({ id: s.id as string, name: s.name as string, artistName: s.artist_name as string, albumName: s.album_name as string }));
+  } catch { return []; }
+}

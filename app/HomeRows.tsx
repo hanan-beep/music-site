@@ -19,14 +19,14 @@ function Row({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-function Card({ song, onPlay }: { song: S; onPlay: () => void }) {
+function Card({ song, onPlay, rank }: { song: S; onPlay: () => void; rank?: number }) {
   const [c1, c2] = COLORS[hash(song.name) % COLORS.length];
   return (
     <button onClick={onPlay} className="group w-36 flex-none snap-start text-right sm:w-40">
       <div className="relative grid aspect-square place-items-center overflow-hidden rounded-3xl shadow-lg transition-transform group-hover:-translate-y-1"
         style={{ background: `linear-gradient(135deg, ${c1}, ${c2})` }}>
         <MusicNoteIcon size={64} color="rgba(255,255,255,.55)" />
-        {song.isNew && <span className="absolute right-2 top-2 rounded-full bg-white px-2 py-0.5 text-[11px] font-extrabold text-[#DD2476]">חדש</span>}
+        {rank ? <span className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-white text-sm font-extrabold text-[#DD2476]">{rank}</span> : song.isNew && <span className="absolute right-2 top-2 rounded-full bg-white px-2 py-0.5 text-[11px] font-extrabold text-[#DD2476]">חדש</span>}
         <span className="absolute bottom-2 left-2 grid h-10 w-10 place-items-center rounded-full bg-white shadow-lg transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
           <PlayIcon size={14} color="#DD2476" />
         </span>
@@ -53,4 +53,11 @@ export function HistoryRow() {
   const songs = history.slice(0, 12);
   const list = songs.map(toQ);
   return <Row title="האזנות אחרונות שלך">{songs.map((s, i) => <Card key={s.id} song={s} onPlay={() => play(list, i)} />)}</Row>;
+}
+
+export function TopRow({ songs }: { songs: S[] }) {
+  const { play } = usePlayer();
+  if (songs.length < 3) return null;
+  const list = songs.map(toQ);
+  return <Row title="הכי מושמעים החודש">{songs.map((s, i) => <Card key={s.id} song={s} rank={i + 1} onPlay={() => play(list, i)} />)}</Row>;
 }

@@ -96,6 +96,7 @@ export async function GET(req: Request) {
       songs: await save(db, 'songs', songs, start),
     };
     for (const t of ['artists', 'albums', 'songs']) await db.from(t).delete().lt('synced_at', start);
+    await db.from('plays').delete().lt('played_at', new Date(Date.now() - 90 * 86400000).toISOString());
     return Response.json({ ok: true, ...counts });
   } catch (e: any) {
     console.error(e);

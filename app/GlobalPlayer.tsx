@@ -24,6 +24,7 @@ export default function GlobalPlayer() {
   const audio = useRef<HTMLAudioElement>(null);
   const preload = useRef<HTMLAudioElement>(null);
   const played = useRef<number[]>([]);
+  const counted = useRef<string | null>(null);
   const planned = useRef<number | null>(null); // השיר הבא שנבחר מראש בערבוב, כדי להכין אותו מראש
   const triedFallback = useRef<string | null>(null);
   const stallTimer = useRef<any>(null);
@@ -170,6 +171,12 @@ export default function GlobalPlayer() {
   useEffect(() => {
     if (!current || time < 1) return;
     try { localStorage.setItem('yallah-pos', JSON.stringify({ id: current.id, t: time })); } catch {}
+  }, [Math.floor(time / 5)]);
+
+  useEffect(() => {
+    if (!current || time < 30 || counted.current === current.id) return;
+    counted.current = current.id; // האזנה נספרת רק אחרי 30 שניות, כדי שדילוגים לא ייספרו
+    fetch('/api/play', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: current.id }), keepalive: true }).catch(() => {});
   }, [Math.floor(time / 5)]);
 
   useEffect(() => {

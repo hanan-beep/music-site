@@ -16,7 +16,7 @@ export const revalidate = 300;
 export default async function Home() {
   const [recentRaw, top] = await Promise.all([getRecentSongs(12), getTopSongs(12)]);
   const recent = recentRaw.map(s => ({
-    ...s, isNew: !!s.createdAt && Date.now() - new Date(s.createdAt).getTime() < 14 * 86400000,
+    ...s, isAlbum: s.artistId === 'monthly-album', isNew: !!s.createdAt && Date.now() - new Date(s.createdAt).getTime() < 14 * 86400000,
   }));
   return (
     <main className="min-h-screen" dir="rtl">

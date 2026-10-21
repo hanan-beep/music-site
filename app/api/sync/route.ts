@@ -84,9 +84,19 @@ export async function GET(req: Request) {
 
     const months = (await list('1mlTjhQHWEe1x-GXbw10zVF9EtGxmtn72')).filter(f => f.mimeType === FOLDER);
     await pool(months, 5, async m => {
-      (await list(m.id)).filter(f => AUDIO.test(f.name)).forEach(s => songs.push({
-        id: s.id, name: s.name, artist_id: 'monthly', album_id: m.id, artist_name: '', album_name: m.name, created_at: s.createdTime,
+      const its = await list(m.id);
+      its.filter(f => AUDIO.test(f.name)).forEach(f => songs.push({
+        id: f.id, name: f.name, artist_id: 'monthly', album_id: m.id, artist_name: '', album_name: m.name, created_at: f.createdTime,
       }));
+      // אלבום בתוך תיקיית חודש: שורה אחת לאלבום עצמו (לכרטיס "נוספו לאחרונה") + השירים שלו בנפרד (לדף השירים)
+      await pool(its.filter(f => f.mimeType === FOLDER), 3, async al => {
+        const tracks = (await list(al.id)).filter(f => AUDIO.test(f.name));
+        if (!tracks.length) return;
+        songs.push({ id: al.id, name: al.name, artist_id: 'monthly-album', album_id: m.id, artist_name: '', album_name: m.name, created_at: al.createdTime });
+        tracks.forEach(f => songs.push({
+          id: f.id, name: f.name, artist_id: 'monthly-inner', album_id: al.id, artist_name: '', album_name: al.name, created_at: f.createdTime,
+        }));
+      });
     });
 
     if (artists.length === 0) throw new Error('לא נמצאו זמרים בדרייב, לא מוחק כלום');

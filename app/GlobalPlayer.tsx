@@ -201,7 +201,7 @@ export default function GlobalPlayer() {
 
   const PlayBtn = ({ size }: { size: number }) => (
     <button onClick={toggle} aria-label={playing ? 'השהה' : 'נגן'} style={{ width: size, height: size }}
-      className="grid place-items-center rounded-full bg-gradient-to-br from-[#FFC93C] via-[#FF512F] to-[#DD2476] shadow-lg transition-transform active:scale-95">
+      className="grid shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#FFC93C] via-[#FF512F] to-[#DD2476] shadow-lg transition-transform active:scale-95">
       {loading
         ? <svg className="animate-spin" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"><path d="M12 3a9 9 0 1 0 9 9" /></svg>
         : playing
@@ -236,7 +236,7 @@ export default function GlobalPlayer() {
       {current && !open && (
         <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[200] p-3 sm:p-4">
           <div className="pointer-events-auto mx-auto max-w-3xl overflow-hidden rounded-[28px] bg-[#1B1033]/95 text-white shadow-[0_20px_60px_-10px_rgba(221,36,118,.55)] ring-1 ring-white/10 backdrop-blur-xl" dir="rtl">
-            <div className="flex items-center gap-3 px-4 pt-3 sm:px-5">
+            <div className="flex items-center gap-2 px-4 pt-3 sm:px-5">
               <button onClick={() => setOpen(true)} aria-label="פתח נגן מלא" className="flex min-w-0 flex-1 items-center gap-3 text-right">
                 <div className={`disc ${playing ? 'spin' : ''}`}><img src={art} alt="" /></div>
                 <div className="min-w-0 flex-1">
@@ -244,17 +244,16 @@ export default function GlobalPlayer() {
                   <p className="truncate text-xs text-white/55">{[current.artistName, current.albumName].filter(Boolean).join(' • ') || `${currentIndex + 1} מתוך ${songs.length}`}</p>
                 </div>
               </button>
-              <div className={`eq ${playing ? 'on' : ''}`} aria-hidden><i /><i /><i /><i /></div>
-              <FavButton song={song!} />
-              <button onClick={close} aria-label="סגור נגן" className="p-2 text-white/50 hover:text-white"><CloseIcon size={18} color="currentColor" /></button>
-            </div>
-            <div className="flex items-center gap-3 px-4 pb-3 pt-2 sm:px-5">
-              <div className="flex-1">{Seek()}</div>
-              <div dir="ltr" className="flex items-center gap-1">
-                <button onClick={back} aria-label="הקודם" className="p-2 transition-transform hover:scale-110"><PrevIcon size={22} color="white" /></button>
-                {PlayBtn({ size: 48 })}
-                <button onClick={() => advance()} disabled={noNext} aria-label="הבא" className="p-2 transition-transform hover:scale-110 disabled:opacity-30"><NextIcon size={22} color="white" /></button>
+              <div dir="ltr" className="flex flex-none items-center">
+                <button onClick={back} aria-label="הקודם" className="flex-none p-2 transition-transform active:scale-90"><PrevIcon size={24} color="white" /></button>
+                {PlayBtn({ size: 46 })}
+                <button onClick={() => advance()} disabled={noNext} aria-label="הבא" className="flex-none p-2 transition-transform active:scale-90 disabled:opacity-30"><NextIcon size={24} color="white" /></button>
               </div>
+            </div>
+            <div className="flex items-center gap-1 px-4 pb-3 pt-1 sm:px-5">
+              <div className="min-w-0 flex-1">{Seek()}</div>
+              <FavButton song={song!} />
+              <button onClick={close} aria-label="סגור נגן" className="flex-none p-2 text-white/50 hover:text-white"><CloseIcon size={18} color="currentColor" /></button>
             </div>
           </div>
         </div>

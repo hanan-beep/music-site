@@ -117,8 +117,9 @@ async function getAllSongs() {
 export default async function SongsPage() {
   const cat = await getCatalogSongs();
   if (cat.some(s => s.artistId === 'monthly')) {
+    const isM = (s: any) => s.artistId === 'monthly' || s.artistId === 'monthly-inner';
     const mk = (s: any) => {
-      const monthly = s.artistId === 'monthly';
+      const monthly = isM(s);
       const t = s.createdAt ? new Date(s.createdAt).getTime() : 0;
       return {
         id: s.id, name: s.name, artistName: s.artistName, albumName: s.albumName,
@@ -126,7 +127,7 @@ export default async function SongsPage() {
         createdTime: s.createdAt, isMonthly: monthly,
       };
     };
-    return <SongsClient regularSongs={cat.filter(s => s.artistId !== 'monthly').map(mk)} extraSongs={cat.filter(s => s.artistId === 'monthly').map(mk)} />;
+    return <SongsClient regularSongs={cat.filter(s => !isM(s)).map(mk)} extraSongs={cat.filter(isM).map(mk)} />;
   }
   const { regularSongs, monthlySongs } = await getAllSongs();
   return <SongsClient regularSongs={regularSongs} extraSongs={monthlySongs} />;

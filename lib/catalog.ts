@@ -31,6 +31,7 @@ export async function getAlbums() {
 }
 export async function getAllSongs() {
   return (await all('songs', 'id,name,artist_id,artist_name,album_name,created_at', 'name'))
+    .filter(s => s.artist_id !== 'monthly-album')
     .map(s => ({ id: s.id, name: s.name, artistId: s.artist_id, artistName: s.artist_name, albumName: s.album_name, createdAt: s.created_at }));
 }
 
@@ -58,9 +59,14 @@ export async function getRecentSongs(limit = 12) {
   const db = catalogDb();
   if (!db) return [];
   try {
-    const { data } = await db.from('songs').select('id,name,artist_name,album_name,created_at')
+    // רק מתיקיית החודשים (שירים ואלבומים שלמים), לא משירי הזמרים
+    const { data } = await db.from('songs').select('id,name,artist_id,artist_name,album_name,created_at')
+      .in('artist_id', ['monthly', 'monthly-album'])
       .order('created_at', { ascending: false, nullsFirst: false }).limit(limit);
-    return (data || []).map((s: any) => ({ id: s.id, name: s.name, artistName: s.artist_name as string, albumName: s.album_name as string, createdAt: s.created_at as string | null }));
+    return (data || []).map((s: any) => ({
+      id: s.id as string, name: s.name as string, artistId: s.artist_id as string,
+      artistName: s.artist_name as string, albumName: s.album_name as string, createdAt: s.created_at as string | null,
+    }));
   } catch { return []; }
 }
 
@@ -77,11 +83,11 @@ export async function getRandomSongs(n = 40) {
   const db = catalogDb();
   if (!db) return [];
   try {
-    const { count } = await db.from('songs').select('id', { count: 'exact', head: true });
+    const { count } = await db.from('songs').select('id', { count: 'exact', head: true }).neq('artist_id', 'monthly-album');
     const total = count || 0;
     if (!total) return [];
     const from = Math.floor(Math.random() * Math.max(1, total - n));
-    const { data } = await db.from('songs').select('id,name,artist_name,album_name').order('id').range(from, from + n - 1);
+    const { data } = await db.from('songs').select('id,name,artist_name,album_name').neq('artist_id', 'monthly-album').order('id').range(from, from + n - 1);
     return (data || []).map((s: any) => ({ id: s.id as string, name: s.name as string, artistName: s.artist_name as string, albumName: s.album_name as string }))
       .sort(() => Math.random() - 0.5);
   } catch { return []; }

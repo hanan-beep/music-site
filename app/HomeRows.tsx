@@ -2,9 +2,10 @@
 import type { ReactNode } from 'react';
 import { usePlayer } from './PlayerContext';
 import { useHistory } from './HistoryContext';
-import { PlayIcon, MusicNoteIcon } from './Icons';
+import { useRouter } from 'next/navigation';
+import { PlayIcon, MusicNoteIcon, AlbumIcon } from './Icons';
 
-type S = { id: string; name: string; artistName?: string; albumName?: string; isNew?: boolean };
+type S = { id: string; name: string; artistName?: string; albumName?: string; isNew?: boolean; isAlbum?: boolean };
 
 const COLORS = [['#FF512F', '#DD2476'], ['#7B2FF7', '#54A0FF'], ['#FFC93C', '#FF512F'], ['#1B1033', '#7B2FF7'], ['#54A0FF', '#5FF5A0']];
 const hash = (s: string) => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
@@ -25,13 +26,13 @@ function Card({ song, onPlay, rank }: { song: S; onPlay: () => void; rank?: numb
     <button onClick={onPlay} className="group w-36 flex-none snap-start text-right sm:w-40">
       <div className="relative grid aspect-square place-items-center overflow-hidden rounded-3xl shadow-lg transition-transform group-hover:-translate-y-1"
         style={{ background: `linear-gradient(135deg, ${c1}, ${c2})` }}>
-        <MusicNoteIcon size={64} color="rgba(255,255,255,.55)" />
-        {rank ? <span className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-white text-sm font-extrabold text-[#DD2476]">{rank}</span> : song.isNew && <span className="absolute right-2 top-2 rounded-full bg-white px-2 py-0.5 text-[11px] font-extrabold text-[#DD2476]">חדש</span>}
-        <span className="absolute bottom-2 left-2 grid h-10 w-10 place-items-center rounded-full bg-white shadow-lg transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
+        {song.isAlbum ? <AlbumIcon size={64} color="rgba(255,255,255,.55)" /> : <MusicNoteIcon size={64} color="rgba(255,255,255,.55)" />}
+        {song.isAlbum ? <span className="absolute right-2 top-2 rounded-full bg-white px-2 py-0.5 text-[11px] font-extrabold text-[#1B1033]">אלבום</span> : rank ? <span className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-white text-sm font-extrabold text-[#DD2476]">{rank}</span> : song.isNew && <span className="absolute right-2 top-2 rounded-full bg-white px-2 py-0.5 text-[11px] font-extrabold text-[#DD2476]">חדש</span>}
+        {!song.isAlbum && <span className="absolute bottom-2 left-2 grid h-10 w-10 place-items-center rounded-full bg-white shadow-lg transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
           <PlayIcon size={14} color="#DD2476" />
-        </span>
+        </span>}
       </div>
-      <h3 className="mt-2 line-clamp-2 text-sm font-extrabold leading-snug">{clean(song.name)}</h3>
+      <h3 className="mt-2 line-clamp-2 text-sm font-extrabold leading-snug">{song.isAlbum ? song.name : clean(song.name)}</h3>
       <p className="truncate text-xs text-[#1B1033]/55">{song.artistName || song.albumName}</p>
     </button>
   );
@@ -41,9 +42,14 @@ const toQ = (s: S) => ({ id: s.id, name: s.name, artistName: s.artistName, album
 
 export function RecentRow({ songs }: { songs: S[] }) {
   const { play } = usePlayer();
+  const router = useRouter();
   if (!songs.length) return null;
-  const list = songs.map(toQ);
-  return <Row title="נוספו לאחרונה">{songs.map((s, i) => <Card key={s.id} song={s} onPlay={() => play(list, i)} />)}</Row>;
+  const list = songs.filter(s => !s.isAlbum).map(toQ);
+  // אלבום נפתח בדף האלבום עצמו; שיר מנוגן
+  const open = (s: S) => (s.isAlbum
+    ? router.push(`/album/${s.id}?name=${encodeURIComponent(s.name)}`)
+    : play(list, list.findIndex(x => x.id === s.id)));
+  return <Row title="נוספו לאחרונה">{songs.map(s => <Card key={s.id} song={s} onPlay={() => open(s)} />)}</Row>;
 }
 
 export function HistoryRow() {

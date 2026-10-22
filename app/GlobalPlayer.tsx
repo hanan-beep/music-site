@@ -25,6 +25,9 @@ export default function GlobalPlayer() {
   const preload = useRef<HTMLAudioElement>(null);
   const played = useRef<number[]>([]);
   const counted = useRef<string | null>(null);
+  const userPaused = useRef(false);   // המשתמש (או כפתור ההגה) השהה בכוונה
+  const interrupted = useRef(false);  // נעצר מבחוץ, למשל וויז לקחה את השמע
+  const resumeTimer = useRef<any>(null);
   const planned = useRef<number | null>(null); // השיר הבא שנבחר מראש בערבוב, כדי להכין אותו מראש
   const triedFallback = useRef<string | null>(null);
   const stallTimer = useRef<any>(null);
@@ -76,7 +79,12 @@ export default function GlobalPlayer() {
     try { const as = (navigator as any).audioSession; if (as) as.type = 'playback'; } catch {}
     const online = () => { const a = audio.current; if (a && !a.paused && a.readyState < 3) reconnectRef.current(); };
     window.addEventListener('online', online);
-    return () => window.removeEventListener('online', online);
+    const vis = () => { // חזרה לאפליקציה אחרי שהשמע נקטע מבחוץ: ממשיכים
+      const a = audio.current;
+      if (document.visibilityState === 'visible' && a && a.paused && interrupted.current && !userPaused.current) a.play().catch(() => {});
+    };
+    document.addEventListener('visibilitychange', vis);
+    return () => { window.removeEventListener('online', online); document.removeEventListener('visibilitychange', vis); };
   }, []);
 
   useEffect(() => {
@@ -98,9 +106,9 @@ export default function GlobalPlayer() {
         artwork: [{ src: '/logo.png', sizes: '512x512', type: 'image/png' }],
       });
       const h = (a: MediaSessionAction, f: MediaSessionActionHandler) => { try { navigator.mediaSession.setActionHandler(a, f); } catch {} };
-      h('play', () => audio.current?.play());
-      h('pause', () => audio.current?.pause());
-      h('stop', () => audio.current?.pause());
+      h('play', () => { userPaused.current = false; audio.current?.play(); });
+      h('pause', () => { userPaused.current = true; audio.current?.pause(); });
+      h('stop', () => { userPaused.current = true; audio.current?.pause(); });
       h('previoustrack', () => fns.current.back());
       h('nexttrack', () => fns.current.advance());
       h('seekbackward', () => { if (audio.current) audio.current.currentTime = Math.max(0, audio.current.currentTime - 10); });
@@ -186,14 +194,18 @@ export default function GlobalPlayer() {
       setSleepLeft(Math.max(0, left));
       const a = audio.current;
       if (a && left < 10000 && left > 0) a.volume = Math.max(0.05, left / 10000);
-      if (left <= 0) { a?.pause(); if (a) a.volume = 1; setSleepAt(null); }
+      if (left <= 0) { userPaused.current = true; a?.pause(); if (a) a.volume = 1; setSleepAt(null); }
     };
     tick();
     const id = setInterval(tick, 500);
     return () => { clearInterval(id); if (audio.current) audio.current.volume = 1; };
   }, [sleepAt]);
 
-  const toggle = () => (playing ? audio.current?.pause() : audio.current?.play());
+  const toggle = () => {
+    const a = audio.current;
+    if (!a) return;
+    if (playing) { userPaused.current = true; a.pause(); } else { userPaused.current = false; a.play().catch(() => {}); }
+  };
   const noNext = !shuffle && repeat !== 'all' && currentIndex >= songs.length - 1;
   const cycleRepeat = () => setRepeat(r => (r === 'off' ? 'all' : r === 'all' ? 'one' : 'off'));
   const pct = dur ? (time / dur) * 100 : 0;
@@ -220,7 +232,15 @@ export default function GlobalPlayer() {
 
   return (
     <>
-      <audio ref={audio} onPlay={() => { setPlaying(true); setMS('playing'); }} onPause={() => { setPlaying(false); setMS('paused'); }}
+      <audio ref={audio} onPlay={() => { setPlaying(true); setMS('playing'); userPaused.current = false; interrupted.current = false; clearTimeout(resumeTimer.current); }} onPause={() => {
+          setPlaying(false); setMS('paused');
+          const a = audio.current;
+          if (a && !userPaused.current && !a.ended && a.currentTime > 0) {
+            interrupted.current = true; // נעצר מבחוץ (למשל מעבר לוויז ברכב): מנסים לחזור פעם אחת
+            clearTimeout(resumeTimer.current);
+            resumeTimer.current = setTimeout(() => { if (a.paused && !userPaused.current) a.play().catch(() => {}); }, 1500);
+          }
+        }}
         onWaiting={() => { setLoading(true); armStall(); }} onStalled={armStall}
         onPlaying={() => { setLoading(false); clearStall(); }} onCanPlay={() => { setLoading(false); clearStall(); }}
         onTimeUpdate={e => setTime(e.currentTarget.currentTime)} onLoadedMetadata={e => { setDur(e.currentTarget.duration); if (resumeAt.current > 0) { e.currentTarget.currentTime = resumeAt.current; resumeAt.current = 0; } }}

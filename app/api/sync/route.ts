@@ -50,6 +50,21 @@ async function save(db: any, table: string, rows: any[], start: string) {
 
 const safeEq = (a: string, b: string) => { const x = Buffer.from(a), y = Buffer.from(b); return x.length === y.length && timingSafeEqual(x, y); };
 
+async function alertOwner(msg: string) {
+  try {
+    const safe = msg.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: 'יאללה שירים <onboarding@resend.dev>', to: 'yaele9090@gmail.com',
+        subject: 'התראה: סריקת הקטלוג של האתר נכשלה',
+        html: `<div dir="rtl" style="font-family:Arial,sans-serif"><p>הסריקה האוטומטית של האתר נכשלה.</p><p><b>הודעת השגיאה:</b> ${safe}</p><p>אם זה חוזר על עצמו, ייתכן שמפתח של גוגל נמחק או פג תוקף, או ש-Supabase לא זמין.</p></div>`,
+      }),
+    });
+  } catch {}
+}
+
 export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET;
   const given = req.headers.get('authorization')?.replace('Bearer ', '') ?? new URL(req.url).searchParams.get('key');
@@ -58,12 +73,18 @@ export async function GET(req: Request) {
   const db = catalogDb();
   if (!db) return Response.json({ error: 'חסר SUPABASE_SERVICE_ROLE_KEY' }, { status: 500 });
 
+  // scope=monthly: סריקה מהירה של תיקיית החודשים בלבד (רצה כל 15 דקות). בלי scope: סריקה מלאה.
+  const monthlyOnly = new URL(req.url).searchParams.get('scope') === 'monthly';
+
   try {
     const start = new Date().toISOString();
-    const roots = [process.env.GOOGLE_FOLDER_1!, process.env.GOOGLE_FOLDER_2!];
-    const top = (await Promise.all(roots.map(list))).flat().filter(f => f.mimeType === FOLDER);
-    const seen = new Set<string>();
-    const artistFolders = top.filter(f => { const k = f.name.trim().toLowerCase(); return seen.has(k) ? false : (seen.add(k), true); });
+    let artistFolders: any[] = [];
+    if (!monthlyOnly) {
+      const roots = [process.env.GOOGLE_FOLDER_1!, process.env.GOOGLE_FOLDER_2!];
+      const top = (await Promise.all(roots.map(list))).flat().filter(f => f.mimeType === FOLDER);
+      const seen = new Set<string>();
+      artistFolders = top.filter(f => { const k = f.name.trim().toLowerCase(); return seen.has(k) ? false : (seen.add(k), true); });
+    }
 
     const artists: any[] = [], albums: any[] = [], songs: any[] = [];
     const song = (s: any, a: any, al?: any) => ({
@@ -99,6 +120,12 @@ export async function GET(req: Request) {
       });
     });
 
+    if (monthlyOnly) {
+      if (songs.length === 0) throw new Error('לא נמצאו שירים בתיקיית החודשים, לא מוחק כלום');
+      const n = await save(db, 'songs', songs, start);
+      await db.from('songs').delete().in('artist_id', ['monthly', 'monthly-album', 'monthly-inner']).lt('synced_at', start);
+      return Response.json({ ok: true, scope: 'monthly', songs: n });
+    }
     if (artists.length === 0) throw new Error('לא נמצאו זמרים בדרייב, לא מוחק כלום');
     const counts = {
       artists: await save(db, 'artists', artists, start),
@@ -110,6 +137,7 @@ export async function GET(req: Request) {
     return Response.json({ ok: true, ...counts });
   } catch (e: any) {
     console.error(e);
+    if (!monthlyOnly) await alertOwner(String(e?.message ?? e));
     return Response.json({ ok: false, error: e.message }, { status: 500 });
   }
 }

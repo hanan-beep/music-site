@@ -40,6 +40,13 @@ const okType = t => /^(audio\/|video\/mp4|application\/(ogg|pdf|octet-stream))/.
 const kind = t => (/^(audio\/|application\/pdf)/.test(t || '') ? t : 'audio/mpeg');
 
 export default {
+  // מופעל לפי Cron Triggers שמגדירים ב-Cloudflare: כל 15 דקות סריקה מהירה, כל 3 שעות סריקה מלאה
+  async scheduled(event, env, ctx) {
+    const base = env.SITE_URL || 'https://music-site-flame.vercel.app';
+    const full = event.cron === (env.FULL_CRON || '0 */3 * * *');
+    ctx.waitUntil(fetch(`${base}/api/sync${full ? '' : '?scope=monthly'}`, { headers: { Authorization: `Bearer ${env.SYNC_KEY}` } }).catch(() => {}));
+  },
+
   async fetch(req, env, ctx) {
     const url = new URL(req.url);
     if (url.pathname === '/') return new Response('yalla stream ok');

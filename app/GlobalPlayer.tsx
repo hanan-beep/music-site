@@ -16,6 +16,13 @@ const Svg = ({ children, size = 22, color = 'white' }: any) => (
 );
 const ShuffleIcon = (p: any) => <Svg {...p}><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5" /></Svg>;
 const RepeatIcon = ({ one, ...p }: any) => <Svg {...p}><path d="M17 2l4 4-4 4M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4M21 13v2a3 3 0 0 1-3 3H3" />{one && <path d="M11 10h1v4" />}</Svg>;
+const VolIcon = ({ level }: { level: number }) => (
+  <Svg size={20} color="currentColor">
+    <path d="M11 5 6 9H2v6h4l5 4V5z" />
+    {level === 0 ? <path d="m22 9-6 6m0-6 6 6" /> : <path d="M15.5 8.5a5 5 0 0 1 0 7" />}
+    {level > 0.5 && <path d="M19 5a9 9 0 0 1 0 14" />}
+  </Svg>
+);
 const ChevronDown = () => <Svg><path d="m6 9 6 6 6-6" /></Svg>;
 
 export default function GlobalPlayer() {
@@ -37,6 +44,11 @@ export default function GlobalPlayer() {
   const [sleepEnd, setSleepEnd] = useState(false);
   const [sleepOpen, setSleepOpen] = useState(false);
   const [sleepLeft, setSleepLeft] = useState(0);
+  const [vol, setVol] = useState(1);
+  const [muted, setMuted] = useState(false);
+  const [volOk, setVolOk] = useState(true); // באייפון אי אפשר לשלוט בעוצמה מהאתר
+  const volRef = useRef(1);
+  const lastVol = useRef(0.7);
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -77,6 +89,18 @@ export default function GlobalPlayer() {
   useEffect(() => {
     try { savedPos.current = JSON.parse(localStorage.getItem('yallah-pos') || 'null'); } catch {}
     try { const as = (navigator as any).audioSession; if (as) as.type = 'playback'; } catch {}
+    try {
+      const a = audio.current;
+      if (a) {
+        const prev = a.volume;
+        a.volume = 0.5;
+        const ok = Math.abs(a.volume - 0.5) < 0.01;
+        a.volume = prev;
+        setVolOk(ok);
+        const saved = parseFloat(localStorage.getItem('yallah-vol') || '');
+        if (ok && saved >= 0 && saved <= 1) { a.volume = saved; volRef.current = saved; setVol(saved); }
+      }
+    } catch {}
     const online = () => { const a = audio.current; if (a && !a.paused && a.readyState < 3) reconnectRef.current(); };
     window.addEventListener('online', online);
     const vis = () => { // חזרה לאפליקציה אחרי שהשמע נקטע מבחוץ: ממשיכים
@@ -193,13 +217,38 @@ export default function GlobalPlayer() {
       const left = sleepAt - Date.now();
       setSleepLeft(Math.max(0, left));
       const a = audio.current;
-      if (a && left < 10000 && left > 0) a.volume = Math.max(0.05, left / 10000);
-      if (left <= 0) { userPaused.current = true; a?.pause(); if (a) a.volume = 1; setSleepAt(null); }
+      if (a && left < 10000 && left > 0) a.volume = Math.max(0.02, (left / 10000) * volRef.current);
+      if (left <= 0) { userPaused.current = true; a?.pause(); if (a) a.volume = volRef.current; setSleepAt(null); }
     };
     tick();
     const id = setInterval(tick, 500);
-    return () => { clearInterval(id); if (audio.current) audio.current.volume = 1; };
+    return () => { clearInterval(id); if (audio.current) audio.current.volume = volRef.current; };
   }, [sleepAt]);
+
+  const changeVol = (v: number) => {
+    const a = audio.current;
+    if (!a) return;
+    v = Math.min(1, Math.max(0, v));
+    volRef.current = v; a.volume = v; a.muted = v === 0;
+    if (v > 0) lastVol.current = v;
+    setVol(v); setMuted(v === 0);
+    try { localStorage.setItem('yallah-vol', String(v)); } catch {}
+  };
+  const toggleMute = () => {
+    const a = audio.current;
+    if (!a) return;
+    if (!muted && vol > 0) { a.muted = true; setMuted(true); }
+    else if (vol === 0) changeVol(lastVol.current || 0.7);
+    else { a.muted = false; setMuted(false); }
+  };
+  const shownVol = muted ? 0 : vol;
+  const VolumeControl = () => (
+    <div dir="ltr" className="flex items-center gap-3">
+      <button onClick={toggleMute} aria-label={shownVol === 0 ? 'בטל השתקה' : 'השתק'} className="flex-none p-1 text-white/70 hover:text-white"><VolIcon level={shownVol} /></button>
+      <input type="range" min={0} max={1} step={0.02} value={shownVol} aria-label="עוצמת קול" className="seek min-w-0 flex-1"
+        onChange={e => changeVol(+e.target.value)} style={{ ['--p' as string]: `${shownVol * 100}%` }} />
+    </div>
+  );
 
   const toggle = () => {
     const a = audio.current;
@@ -272,6 +321,7 @@ export default function GlobalPlayer() {
             </div>
             <div className="flex items-center gap-1 px-4 pb-3 pt-1 sm:px-5">
               <div className="min-w-0 flex-1">{Seek()}</div>
+              {volOk && <div className="hidden w-36 flex-none sm:block">{VolumeControl()}</div>}
               <FavButton song={song!} />
               <button onClick={close} aria-label="סגור נגן" className="flex-none p-2 text-white/50 hover:text-white"><CloseIcon size={18} color="currentColor" /></button>
             </div>
@@ -304,6 +354,8 @@ export default function GlobalPlayer() {
               <button onClick={() => advance()} disabled={noNext} aria-label="הבא" className="p-2.5 disabled:opacity-30"><NextIcon size={28} color="white" /></button>
               <button onClick={cycleRepeat} aria-label="חזרה" className="p-2.5"><RepeatIcon one={repeat === 'one'} color={repeat === 'off' ? 'rgba(255,255,255,.55)' : '#FFC93C'} /></button>
             </div>
+
+            {volOk && <div className="mt-6 px-1">{VolumeControl()}</div>}
 
             <div className="mt-6 flex flex-col items-center gap-3">
               <button onClick={() => setSleepOpen(o => !o)}

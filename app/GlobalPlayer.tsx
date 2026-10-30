@@ -46,6 +46,7 @@ export default function GlobalPlayer() {
   const [sleepLeft, setSleepLeft] = useState(0);
   const [vol, setVol] = useState(1);
   const [muted, setMuted] = useState(false);
+  const [volOpen, setVolOpen] = useState(false);
   const [volOk, setVolOk] = useState(true); // באייפון אי אפשר לשלוט בעוצמה מהאתר
   const volRef = useRef(1);
   const lastVol = useRef(0.7);
@@ -304,7 +305,7 @@ export default function GlobalPlayer() {
 
       {current && !open && (
         <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[200] p-3 sm:p-4">
-          <div className="pointer-events-auto mx-auto max-w-3xl overflow-hidden rounded-[28px] bg-[#1B1033]/95 text-white shadow-[0_20px_60px_-10px_rgba(221,36,118,.55)] ring-1 ring-white/10 backdrop-blur-xl" dir="rtl">
+          <div className="pointer-events-auto mx-auto max-w-3xl rounded-[28px] bg-[#1B1033]/95 text-white shadow-[0_20px_60px_-10px_rgba(221,36,118,.55)] ring-1 ring-white/10 backdrop-blur-xl" dir="rtl">
             <div className="flex items-center gap-2 px-4 pt-3 sm:px-5">
               <button onClick={() => setOpen(true)} aria-label="פתח נגן מלא" className="flex min-w-0 flex-1 items-center gap-3 text-right">
                 <div className={`disc ${playing ? 'spin' : ''}`}><img src={art} alt="" /></div>
@@ -318,10 +319,24 @@ export default function GlobalPlayer() {
                 {PlayBtn({ size: 46 })}
                 <button onClick={() => advance()} disabled={noNext} aria-label="הבא" className="flex-none p-2 transition-transform active:scale-90 disabled:opacity-30"><NextIcon size={24} color="white" /></button>
               </div>
+              {volOk && (
+                <div className="relative hidden flex-none sm:block" onMouseEnter={() => setVolOpen(true)} onMouseLeave={() => setVolOpen(false)}
+                  onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setVolOpen(false); }}>
+                  <button onClick={toggleMute} onFocus={() => setVolOpen(true)} aria-label={shownVol === 0 ? 'בטל השתקה' : 'השתק'}
+                    className="flex-none p-2 text-white/80 transition-transform hover:scale-110 hover:text-white"><VolIcon level={shownVol} /></button>
+                  {volOpen && (
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 pb-2">
+                      <div dir="ltr" className="w-44 rounded-full bg-[#2b1d4d] px-4 py-3 shadow-xl ring-1 ring-white/10">
+                        <input type="range" min={0} max={1} step={0.02} value={shownVol} aria-label="עוצמת קול" className="seek block w-full"
+                          onChange={e => changeVol(+e.target.value)} style={{ ['--p' as string]: `${shownVol * 100}%` }} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             <div className="flex items-center gap-1 px-4 pb-3 pt-1 sm:px-5">
               <div className="min-w-0 flex-1">{Seek()}</div>
-              {volOk && <div className="hidden w-36 flex-none sm:block">{VolumeControl()}</div>}
               <FavButton song={song!} />
               <button onClick={close} aria-label="סגור נגן" className="flex-none p-2 text-white/50 hover:text-white"><CloseIcon size={18} color="currentColor" /></button>
             </div>

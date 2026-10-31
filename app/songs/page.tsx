@@ -1,5 +1,5 @@
 // app/songs/page.tsx
-export const revalidate = 60;
+export const revalidate = 3600;
 
 import SongsClient from './SongsClient';
 import { google } from 'googleapis';

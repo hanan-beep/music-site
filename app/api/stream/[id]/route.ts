@@ -14,6 +14,11 @@ const auth = new google.auth.GoogleAuth({
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!sameSite(req)) return new Response('forbidden', { status: 403 });
+  const worker = process.env.NEXT_PUBLIC_STREAM_BASE;
+  if (worker) {
+    // לא מזרימים דרך Vercel (מגבלת Fast Origin Transfer בתוכנית החינמית): מפנים ל-Cloudflare
+    return Response.redirect(`${worker}/api/stream/${id}${new URL(req.url).search}`, 307);
+  }
   if (!/^[\w-]{10,}$/.test(id)) return new Response('bad id', { status: 400 });
 
   const token = await auth.getAccessToken();

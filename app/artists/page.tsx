@@ -2,7 +2,7 @@
 import ArtistsClient from './ArtistsClient';
 import { getArtists as getCatalogArtists } from '@/lib/catalog';
 
-export const revalidate = 300;
+export const revalidate = 3600;
 
 const IMAGE_MIME = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/jpg'];
 

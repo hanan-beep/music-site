@@ -11,6 +11,7 @@ import GlobalPlayer from "./GlobalPlayer";
 import LoginBanner from "./LoginBanner";
 import GlobalSearch from "./GlobalSearch";
 import ServiceWorkerRegister from "./ServiceWorkerRegister";
+import SupportPrompt from "./SupportPrompt";
 import Script from "next/script";
 
 const rubik = Rubik({ variable: "--font-display", subsets: ["hebrew", "latin"], weight: ["600", "800"] });
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
   title: "יאללה שירים 💪",
   description: "הארכיון המוזיקלי החרדי הגדול ביותר",
   manifest: "/manifest.json",
-  icons: { icon: "/logo.png", apple: "/logo.png" },
+  icons: { icon: "/icon-192.png", apple: "/icon-192.png" },
   appleWebApp: { capable: true, statusBarStyle: "default", title: "יאללה שירים" },
 };
 
@@ -48,6 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <HamburgerMenu />
                 <GlobalSearch />
                 <LoginBanner />
+                <SupportPrompt />
                 {children}
                 <GlobalPlayer />
               </FavoritesProvider>

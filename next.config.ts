@@ -1,5 +1,4 @@
 import type { NextConfig } from "next";
-output: 'standalone',
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },
@@ -11,6 +10,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   poweredByHeader: false,
   // מזהה הגרסה של כל פריסה — לזיהוי עדכון והצגת "גרסה חדשה זמינה"
   env: { NEXT_PUBLIC_BUILD_ID: process.env.VERCEL_GIT_COMMIT_SHA ?? String(Date.now()) },

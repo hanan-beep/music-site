@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>ניהול גישה | יאללה שירים</title>
+<style>
+  body{margin:0;font-family:system-ui,Arial,sans-serif;background:#FFF3EA;color:#1B1033}
+  header{background:linear-gradient(135deg,#FF512F,#DD2476,#7B2FF7);color:#fff;padding:28px 20px}
+  main{max-width:760px;margin:0 auto;padding:20px}
+  h1{margin:0;font-size:28px} h2{margin:28px 0 10px}
+  .card{background:#fff;border-radius:18px;padding:14px 16px;margin:8px 0;display:flex;align-items:center;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .card .who{flex:1;min-width:0} .card b{display:block;overflow:hidden;text-overflow:ellipsis;direction:ltr;text-align:right}
+  .card small{color:#1B1033aa}
+  button{border:0;border-radius:999px;padding:9px 18px;font-weight:700;cursor:pointer;font-size:14px}
+  .ok{background:linear-gradient(135deg,#FF512F,#DD2476);color:#fff} .no{background:#f1e5dc;color:#1B1033}
+  textarea{width:100%;box-sizing:border-box;min-height:90px;border-radius:14px;border:1px solid #0002;padding:12px;font-size:15px;direction:ltr}
+  #msg{padding:14px;border-radius:14px;background:#fff;margin:16px 0;display:none}
+  .empty{color:#1B1033aa;padding:10px 4px}
+</style>
+</head>
+<body>
+<header><h1>ניהול גישה</h1><div>מי מורשה להאזין באתר</div></header>
+<main>
+  <div id="msg"></div>
+  <h2>ממתינים לאישור <span id="pc"></span></h2><div id="pending"></div>
+  <h2>הוספה מראש</h2>
+  <p>הדביקו מייל אחד או כמה (מופרדים ברווח, פסיק או שורה חדשה). הם יאושרו מיד, גם לפני שנכנסו לאתר.</p>
+  <textarea id="bulk" placeholder="name@gmail.com, other@gmail.com"></textarea>
+  <p><button class="ok" id="addBtn">אשר מיילים</button></p>
+  <h2>מאושרים <span id="ac"></span></h2><div id="approved"></div>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const fmt = d => d ? new Date(d).toLocaleString('he-IL') : '—';
+function show(t) { const m = $('msg'); m.textContent = t; m.style.display = 'block'; }
+
+async function api(path, body) {
+  const r = await fetch('/admin/api' + path, body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {});
+  if (r.status === 401 || r.status === 403) { show('צריך להתחבר באתר עם חשבון הגוגל של המנהל, ואז לרענן את הדף הזה.'); throw new Error('auth'); }
+  if (!r.ok) { show('משהו השתבש, נסו שוב.'); throw new Error('http ' + r.status); }
+  return r.json();
+}
+
+function row(u, kind) {
+  const d = document.createElement('div'); d.className = 'card';
+  const who = document.createElement('div'); who.className = 'who';
+  const b = document.createElement('b'); b.textContent = u.email;
+  const s = document.createElement('small');
+  s.textContent = kind === 'pending' ? 'ביקש/ה גישה: ' + fmt(u.requested_at) : 'אושר: ' + fmt(u.approved_at) + (u.last_login_at ? ' · כניסה אחרונה: ' + fmt(u.last_login_at) : '');
+  who.append(b, s);
+  const btn = document.createElement('button');
+  btn.className = kind === 'pending' ? 'ok' : 'no';
+  btn.textContent = kind === 'pending' ? 'אשר' : 'בטל גישה';
+  btn.onclick = async () => { btn.disabled = true; await api(kind === 'pending' ? '/approve' : '/revoke', { email: u.email }); load(); };
+  d.append(who, btn);
+  return d;
+}
+
+function fill(el, users, kind) {
+  el.replaceChildren();
+  if (!users.length) { const e = document.createElement('div'); e.className = 'empty'; e.textContent = kind === 'pending' ? 'אין בקשות ממתינות' : 'עדיין אין מאושרים'; el.append(e); }
+  users.forEach(u => el.append(row(u, kind)));
+}
+
+async function load() {
+  const [p, a] = await Promise.all([api('/users?status=pending'), api('/users?status=approved')]);
+  fill($('pending'), p.users, 'pending'); fill($('approved'), a.users, 'approved');
+  $('pc').textContent = '(' + p.users.length + ')'; $('ac').textContent = '(' + a.users.length + ')';
+}
+
+$('addBtn').onclick = async () => {
+  const text = $('bulk').value.trim(); if (!text) return;
+  const r = await api('/approve', { text });
+  $('bulk').value = ''; show('אושרו ' + r.count + ' מיילים.'); load();
+};
+load().catch(() => {});
+</script>
+</body>
+</html>

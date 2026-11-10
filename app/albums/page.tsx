@@ -1,6 +1,7 @@
 // app/albums/page.tsx — SERVER COMPONENT
 import AlbumsClient from './AlbumsClient';
 import { getAlbums } from '@/lib/catalog';
+export const dynamic = 'force-dynamic';
 
 export const revalidate = 3600;
 

@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 // app/artists/page.tsx — SERVER COMPONENT
 import ArtistsClient from './ArtistsClient';
 import { getArtists as getCatalogArtists } from '@/lib/catalog';

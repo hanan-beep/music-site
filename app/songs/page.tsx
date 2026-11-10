@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 // app/songs/page.tsx
 export const revalidate = 3600;
 

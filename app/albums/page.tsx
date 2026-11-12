@@ -1,30 +1,21 @@
-export const dynamic = 'force-dynamic';
 // app/albums/page.tsx — SERVER COMPONENT
 import AlbumsClient from './AlbumsClient';
 import { getAlbums } from '@/lib/catalog';
+import { listArtistFolders, listFolder } from '@/lib/drive';
 
 export const revalidate = 3600;
 
 async function getAllAlbums() {
-  const BASE = 'https://music-site-flame.vercel.app/api/drive';
-
-  // שולף זמרים
-  const artistsRes = await fetch(BASE, { next: { revalidate: 3600 } });
-  const artists = await artistsRes.json();
-
+  const artists = await listArtistFolders();
   // שולף אלבומים של כל זמר במקביל
   const results = await Promise.all(
-    artists.map(async (artist: any) => {
-      const res = await fetch(`${BASE}?folderId=${artist.id}`, {
-        next: { revalidate: 3600 },
-      });
-      const contents = await res.json();
+    artists.map(async artist => {
+      const contents = await listFolder(artist.id);
       return contents
         .filter((f: any) => f.mimeType === 'application/vnd.google-apps.folder')
         .map((f: any) => ({ ...f, artistName: artist.name }));
     })
   );
-
   return results.flat();
 }
 

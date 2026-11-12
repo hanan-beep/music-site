@@ -34,7 +34,7 @@ export default function PlaylistPage() {
     if (!user || favoriteAlbums.length === 0) return;
     setLoading(true);
     async function fetchAll() {
-      const BASE = 'https://music-site-flame.vercel.app/api/drive';
+      const BASE = '/api/drive';
       const all: any[] = [];
       await Promise.all(favoriteAlbums.map(async (album) => {
         try {

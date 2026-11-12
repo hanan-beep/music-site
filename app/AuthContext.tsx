@@ -35,8 +35,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        // תמיד מפנה לדומיין האמיתי
-        redirectTo: 'https://music-site-flame.vercel.app/auth/callback',
+        // הדומיין שממנו נכנסו (עובד גם ב-Vercel וגם בשרת שלך)
+        redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
   };

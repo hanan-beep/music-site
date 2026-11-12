@@ -6,13 +6,11 @@ import AlbumTile from '@/app/AlbumTile';
 import DetailHero from '@/app/DetailHero';
 import PlayAllButton from '@/app/PlayAllButton';
 import { AlbumIcon } from '@/app/Icons';
+import { listFolder } from '@/lib/drive';
 
 const IMAGE_MIME = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/jpg'];
 
-async function getFolderContents(folderId: string) {
-  const res = await fetch(`https://music-site-flame.vercel.app/api/drive?folderId=${folderId}`, { cache: 'no-store' });
-  return res.json();
-}
+const getFolderContents = (folderId: string) => listFolder(folderId);
 
 export default async function AlbumPage({ params, searchParams }: any) {
   const folderId = decodeURIComponent((await params).name);

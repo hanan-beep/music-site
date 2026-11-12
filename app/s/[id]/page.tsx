@@ -10,7 +10,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const title = song ? clean(song.name) : 'יאללה שירים';
   const desc = (song && [song.artistName, song.albumName].filter(Boolean).join(' • ')) || 'הארכיון המוזיקלי החרדי הגדול ביותר';
   return {
-    metadataBase: new URL('https://music-site-flame.vercel.app'),
+    metadataBase: new URL(process.env.SITE_URL || 'http://localhost:3000'),
     title: `${title} | יאללה שירים`,
     description: desc,
     openGraph: { title, description: desc, images: ['/icon-maskable-512.png'], type: 'website', locale: 'he_IL' },

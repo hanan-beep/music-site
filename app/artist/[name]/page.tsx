@@ -6,20 +6,16 @@ import AlbumTile from '@/app/AlbumTile';
 import DetailHero from '@/app/DetailHero';
 import PlayAllButton from '@/app/PlayAllButton';
 import { getArtistCatalog } from '@/lib/catalog';
+import { listArtistFolders, listFolder } from '@/lib/drive';
 import { MicIcon, FolderIcon } from '@/app/Icons';
 
 const IMAGE_MIME = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/jpg'];
 
 async function getArtistData(artistName: string) {
-  const res = await fetch('https://music-site-flame.vercel.app/api/drive', { next: { revalidate: 3600 } });
-  const artists = await res.json();
-  return artists.find((a: any) => a.name === artistName);
+  return (await listArtistFolders()).find(a => a.name === artistName);
 }
 
-async function getFolderContents(folderId: string) {
-  const res = await fetch(`https://music-site-flame.vercel.app/api/drive?folderId=${folderId}`, { cache: 'no-store' });
-  return res.json();
-}
+const getFolderContents = (folderId: string) => listFolder(folderId);
 
 export default async function ArtistPage({ params }: any) {
   const artistName = decodeURIComponent((await params).name);

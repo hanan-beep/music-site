@@ -1,6 +1,17 @@
 // lib/catalog.ts — קריאת הקטלוג מ-Supabase (שרת בלבד)
 import { createClient } from '@supabase/supabase-js';
 
+// זיכרון קצר טווח: שרת Node שרץ ברציפות לא צריך לשאול את Supabase שוב על אותו דבר בכל כניסה.
+// תוצאות ריקות לא נשמרות, כך שכשל זמני לא "נתקע".
+const memoCache = new Map<string, { t: number; v: any }>();
+async function memo<T>(key: string, ttlMs: number, fn: () => Promise<T>): Promise<T> {
+  const hit = memoCache.get(key);
+  if (hit && Date.now() - hit.t < ttlMs) return hit.v as T;
+  const v = await fn();
+  if (Array.isArray(v) ? v.length : v) memoCache.set(key, { t: Date.now(), v });
+  return v;
+}
+
 export function catalogDb() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -22,14 +33,14 @@ async function all(table: string, cols: string, order: string): Promise<any[]> {
   return rows;
 }
 
-export async function getArtists() {
+async function getArtistsRaw() {
   return (await all('artists', 'id,name,image_id', 'name')).map(a => ({ id: a.id, name: a.name, imageId: a.image_id }));
 }
-export async function getAlbums() {
+async function getAlbumsRaw() {
   return (await all('albums', 'id,name,artist_name,cover_id', 'name'))
     .map(a => ({ id: a.id, name: a.name, artistName: a.artist_name, coverId: a.cover_id }));
 }
-export async function getAllSongs() {
+async function getAllSongsRaw() {
   return (await all('songs', 'id,name,artist_id,artist_name,album_name,created_at', 'name'))
     .filter(s => s.artist_id !== 'monthly-album')
     .map(s => ({ id: s.id, name: s.name, artistId: s.artist_id, artistName: s.artist_name, albumName: s.album_name, createdAt: s.created_at }));
@@ -55,7 +66,7 @@ export async function getArtistCatalog(artistId: string) {
   } catch { return empty; }
 }
 
-export async function getRecentSongs(limit = 12) {
+async function getRecentSongsRaw(limit = 12) {
   const db = catalogDb();
   if (!db) return [];
   try {
@@ -93,7 +104,7 @@ export async function getRandomSongs(n = 40) {
   } catch { return []; }
 }
 
-export async function getTopSongs(limit = 12, days = 30) {
+async function getTopSongsRaw(limit = 12, days = 30) {
   const db = catalogDb();
   if (!db) return [];
   try {
@@ -101,3 +112,13 @@ export async function getTopSongs(limit = 12, days = 30) {
     return ((data as any[]) || []).map(s => ({ id: s.id as string, name: s.name as string, artistName: s.artist_name as string, albumName: s.album_name as string }));
   } catch { return []; }
 }
+
+export const getArtists = () => memo('getArtists', 300000, () => getArtistsRaw());
+
+export const getAlbums = () => memo('getAlbums', 300000, () => getAlbumsRaw());
+
+export const getAllSongs = () => memo('getAllSongs', 300000, () => getAllSongsRaw());
+
+export const getRecentSongs = (limit = 12) => memo('getRecentSongs' + ':' + [limit].join(','), 120000, () => getRecentSongsRaw(limit));
+
+export const getTopSongs = (limit = 12, days = 30) => memo('getTopSongs' + ':' + [limit, days].join(','), 120000, () => getTopSongsRaw(limit, days));

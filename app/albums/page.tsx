@@ -3,7 +3,7 @@ import AlbumsClient from './AlbumsClient';
 import { getAlbums } from '@/lib/catalog';
 import { listArtistFolders, listFolder } from '@/lib/drive';
 
-export const revalidate = 3600;
+export const dynamic = 'force-dynamic';
 
 async function getAllAlbums() {
   const artists = await listArtistFolders();

@@ -11,7 +11,7 @@ const tiles = [
   { href: '/songs', title: 'שירים', sub: 'חיפוש בכל המאגר', bg: 'bg-[#1B1033] text-white', icon: <MusicNoteIcon size={44} color="#FF512F" />, full: true },
 ];
 
-export const revalidate = 600;
+export const dynamic = 'force-dynamic';
 
 export default async function Home() {
   const [recentRaw, top] = await Promise.all([getRecentSongs(12), getTopSongs(12)]);

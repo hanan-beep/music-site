@@ -1,6 +1,5 @@
-export const dynamic = 'force-dynamic';
 // app/songs/page.tsx
-export const revalidate = 3600;
+export const dynamic = 'force-dynamic';
 
 import SongsClient from './SongsClient';
 import { google } from 'googleapis';

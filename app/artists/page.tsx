@@ -3,7 +3,7 @@ import ArtistsClient from './ArtistsClient';
 import { getArtists as getCatalogArtists } from '@/lib/catalog';
 import { listArtistFolders, listFolder } from '@/lib/drive';
 
-export const revalidate = 3600;
+export const dynamic = 'force-dynamic';
 
 const IMAGE_MIME = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/jpg'];
 
